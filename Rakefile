@@ -1,3 +1,5 @@
+require "bundler/gem_tasks"
+
 def specs(dir)
   FileList["spec/#{dir}/*_spec.rb"].shuffle.join(' ')
 end
