@@ -6,6 +6,8 @@ module Pod
 
       def initialize(argv)
         @name = argv.shift_argument
+        @spec = spec_with_path(@name)
+        @spec = spec_with_name(@name) unless @spec
         super
       end
 
@@ -15,10 +17,7 @@ module Pod
       end
 
       def run
-        spec = spec_with_path(@name)
-        spec = spec_with_name(@name) unless spec
-
-        if spec
+        if @spec
           # TODO perform the magic!
         else
           help! "Unable to find a podspec with path or name."
