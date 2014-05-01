@@ -40,6 +40,7 @@ module Pod
       end
 
       def build_in_sandbox
+        config.sandbox_root = 'Pods'
         config.integrate_targets = false
         config.skip_repo_update  = true
 
@@ -56,13 +57,13 @@ module Pod
         Pathname.new('Podfile.lock').delete
       end
 
-      # Taken from validator.rb - maybe it can be refactored there to be usable directly
       def podfile_from_spec(platform_name, deployment_target)
         name     = @spec.name
+        path     = @path
         podfile  = Pod::Podfile.new do
           platform(platform_name, deployment_target)
-          if (@path)
-            pod name, :podspec => @path.to_s
+          if (path)
+            pod name, :podspec => path
           else
             pod name, :path => '.'
           end
@@ -75,13 +76,6 @@ module Pod
         sandbox = Sandbox.new(config.sandbox_root)
         installer = Installer.new(sandbox, podfile)
         installer.install!
-
-        file_accessors = installer.aggregate_targets.map do |target|
-          target.pod_targets.map(&:file_accessors)
-        end.flatten
-
-        @file_accessor = file_accessors.find { |accessor| accessor.spec.root.name == @spec.root.name }
-        config.silent
       end
     end
   end
