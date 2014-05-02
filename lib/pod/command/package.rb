@@ -18,7 +18,9 @@ module Pod
 
       def run
         if @spec
-          build_in_sandbox
+          @spec.available_platforms.each do |platform|
+            build_in_sandbox(platform)
+          end
         else
           help! "Unable to find a podspec with path or name."
         end
@@ -39,22 +41,27 @@ module Pod
         end
       end
 
-      def build_in_sandbox
-        config.sandbox_root = 'Pods'
-        config.integrate_targets = false
-        config.skip_repo_update  = true
+      def build_in_sandbox(platform)
+        config.sandbox_root       = 'Pods'
+        config.integrate_targets  = false
+        config.skip_repo_update   = true
 
-        # TODO: Obviously, this should not be iOS-specific
+        install_pod(platform.name)
+        xcodebuild
 
-        install_pod(:ios)
+        if platform.name == :ios
+          xcodebuild('-sdk iphonesimulator', 'build-sim')
+          `lipo #{config.sandbox_root}/build/libPods.a #{config.sandbox_root}/build-sim/libPods.a -create -output lib#{@spec.name}.a`
+        else
+          `cp #{config.sandbox_root}/build/libPods.a lib#{@spec.name}-osx.a`
+        end
 
-        `xcodebuild CONFIGURATION_BUILD_DIR=build clean build -project Pods/Pods.xcodeproj 2>&1`
-        `xcodebuild CONFIGURATION_BUILD_DIR=build-sim clean build -sdk iphonesimulator -project Pods/Pods.xcodeproj 2>&1`
-
-        `lipo Pods/build/libPods.a Pods/build-sim/libPods.a -create -output lib#{@spec.name}.a`
-
-        Pathname.new('Pods').rmtree
+        Pathname.new(config.sandbox_root).rmtree
         Pathname.new('Podfile.lock').delete
+      end
+
+      def xcodebuild(args='', build_dir='build')
+        `xcodebuild CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -project #{config.sandbox_root}/Pods.xcodeproj 2>&1`
       end
 
       def podfile_from_spec(platform_name, deployment_target)
