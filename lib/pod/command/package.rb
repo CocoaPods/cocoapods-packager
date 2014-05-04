@@ -51,9 +51,11 @@ module Pod
 
         if platform.name == :ios
           xcodebuild('-sdk iphonesimulator', 'build-sim')
-          `lipo #{config.sandbox_root}/build/libPods.a #{config.sandbox_root}/build-sim/libPods.a -create -output lib#{@spec.name}.a`
+          Pathname.new('ios').mkdir
+          `lipo #{config.sandbox_root}/build/libPods.a #{config.sandbox_root}/build-sim/libPods.a -create -output ios/lib#{@spec.name}.a`
         else
-          `cp #{config.sandbox_root}/build/libPods.a lib#{@spec.name}-osx.a`
+          Pathname.new('osx').mkdir
+          `cp #{config.sandbox_root}/build/libPods.a osx/lib#{@spec.name}.a`
         end
 
         Pathname.new(config.sandbox_root).rmtree
