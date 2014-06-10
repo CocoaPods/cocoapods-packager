@@ -2,7 +2,7 @@ module Pod
   class Command
     class Package < Command
       self.summary = 'Package a podspec into a static library.'
-      self.arguments = '[ NAME | NAME.podspec ]'
+      self.arguments = [['NAME', :required]]
 
       def initialize(argv)
         @name = argv.shift_argument
