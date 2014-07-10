@@ -27,6 +27,8 @@ module Pod
       end
 
       def spec_with_name(name)
+        return unless not name.nil?
+
         set = SourcesManager.search(Dependency.new(name))
 
         if set
@@ -35,7 +37,7 @@ module Pod
       end
 
       def spec_with_path(path)
-        if Pathname.new(path).exist?
+        if not path.nil? and Pathname.new(path).exist?
           @path = path
           Specification.from_file(path)
         end
