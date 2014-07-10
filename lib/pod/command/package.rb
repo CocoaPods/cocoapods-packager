@@ -92,6 +92,11 @@ SPEC
         headers_path = versions_path + Pathname.new('Headers')
         headers_path.mkpath unless headers_path.exist?
 
+        current_version_path = versions_path + Pathname.new('../Current')
+        `ln -sf A #{current_version_path}`
+        `ln -sf Versions/Current/Headers #{root_path}/`
+        `ln -sf Versions/Current/#{@spec.name} #{root_path}/`
+
         return versions_path, headers_path
       end
 
