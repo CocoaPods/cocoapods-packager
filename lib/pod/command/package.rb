@@ -65,14 +65,13 @@ SPEC
 
         install_pod(platform.name)
         xcodebuild
+        versions_path, headers_path = create_framework_tree(platform.name.to_s)
 
         if platform.name == :ios
           xcodebuild('-sdk iphonesimulator', 'build-sim')
-          Pathname.new('ios').mkdir
-          `lipo #{config.sandbox_root}/build/libPods.a #{config.sandbox_root}/build-sim/libPods.a -create -output ios/lib#{@spec.name}.a`
+          `lipo #{config.sandbox_root}/build/libPods.a #{config.sandbox_root}/build-sim/libPods.a -create -output #{versions_path}/#{@spec.name}`
         else
-          Pathname.new('osx').mkdir
-          `cp #{config.sandbox_root}/build/libPods.a osx/lib#{@spec.name}.a`
+          `cp #{config.sandbox_root}/build/libPods.a #{versions_path}/#{@spec.name}`
         end
 
         Pathname.new(config.sandbox_root).rmtree
@@ -81,6 +80,18 @@ SPEC
 
       def xcodebuild(args='', build_dir='build')
         `xcodebuild CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -project #{config.sandbox_root}/Pods.xcodeproj 2>&1`
+      end
+
+      def create_framework_tree(platform)
+        root_path = Pathname.new(@spec.name + '-' + platform + '.framework')
+        root_path.mkdir
+
+        versions_path = root_path + Pathname.new('Versions/A')
+
+        headers_path = versions_path + Pathname.new('Headers')
+        headers_path.mkpath
+
+        return versions_path, headers_path
       end
 
       def spec_metadata
