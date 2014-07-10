@@ -85,12 +85,12 @@ SPEC
 
       def create_framework_tree(platform)
         root_path = Pathname.new(@spec.name + '-' + platform + '.framework')
-        root_path.mkdir
+        root_path.mkdir unless root_path.exist?
 
         versions_path = root_path + Pathname.new('Versions/A')
 
         headers_path = versions_path + Pathname.new('Headers')
-        headers_path.mkpath
+        headers_path.mkpath unless headers_path.exist?
 
         return versions_path, headers_path
       end
