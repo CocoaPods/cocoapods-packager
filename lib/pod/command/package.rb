@@ -63,9 +63,10 @@ SPEC
         config.integrate_targets  = false
         config.skip_repo_update   = true
 
-        install_pod(platform.name)
+        sandbox = install_pod(platform.name)
         xcodebuild
         versions_path, headers_path = create_framework_tree(platform.name.to_s)
+        `cp #{sandbox.public_headers.root}/#{@spec.name}/*.h #{headers_path}`
 
         if platform.name == :ios
           xcodebuild('-sdk iphonesimulator', 'build-sim')
@@ -127,6 +128,8 @@ SPEC
         sandbox = Sandbox.new(config.sandbox_root)
         installer = Installer.new(sandbox, podfile)
         installer.install!
+
+        return sandbox
       end
     end
   end
