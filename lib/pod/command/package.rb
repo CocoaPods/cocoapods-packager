@@ -34,7 +34,7 @@ module Pod
 SPEC
           end
 
-          newspec += 'done'
+          newspec += 'end'
           File.open(@spec.name + '.podspec', 'w') { |file| file.write(newspec) }
         else
           help! "Unable to find a podspec with path or name."
@@ -102,6 +102,7 @@ Pod::Spec.new do |s|
   s.summary       = "#{@spec.summary}"
   s.license       = #{@spec.license}
   s.authors       = #{@spec.authors}
+  s.homepage      = "#{@spec.homepage}"
   s.source        = #{@spec.source}
 
 SPEC
