@@ -1,0 +1,16 @@
+inherit_from:
+ - .rubocop-cocoapods.yml
+
+#- Core -----------------------------------------------------------------------
+
+AllCops:
+  Exclude:
+    - spec/**/*
+    - spec/fixtures/**/*
+
+Style/Tab:
+  Enabled: false
+
+LineLength:
+  Enabled: false
+

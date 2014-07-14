@@ -13,7 +13,7 @@ module Pod
 
       def validate!
         super
-        help! "A podspec name or path is required." unless @spec
+        help! 'A podspec name or path is required.' unless @spec
       end
 
       def run
@@ -30,12 +30,12 @@ module Pod
           newspec += builder.spec_close
           File.open(@spec.name + '.podspec', 'w') { |file| file.write(newspec) }
         else
-          help! "Unable to find a podspec with path or name."
+          help! 'Unable to find a podspec with path or name.'
         end
       end
 
       def spec_with_name(name)
-        return unless not name.nil?
+        return unless !name.nil?
 
         set = SourcesManager.search(Dependency.new(name))
 
@@ -45,7 +45,7 @@ module Pod
       end
 
       def spec_with_path(path)
-        if not path.nil? and Pathname.new(path).exist?
+        if !path.nil? && Pathname.new(path).exist?
           @path = path
           Specification.from_file(path)
         end
@@ -77,7 +77,7 @@ module Pod
         Pathname.new('Podfile.lock').delete
       end
 
-      def xcodebuild(defines='', args='', build_dir='build')
+      def xcodebuild(defines = '', args = '', build_dir = 'build')
         `xcodebuild #{defines} CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -project #{config.sandbox_root}/Pods.xcodeproj 2>&1`
       end
 
@@ -103,7 +103,7 @@ module Pod
         path     = @path
         podfile  = Pod::Podfile.new do
           platform(platform_name, deployment_target)
-          if (path)
+          if path
             pod name, :podspec => path
           else
             pod name, :path => '.'
@@ -118,7 +118,7 @@ module Pod
         installer = Installer.new(sandbox, podfile)
         installer.install!
 
-        return sandbox
+        sandbox
       end
     end
   end

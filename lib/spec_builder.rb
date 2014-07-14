@@ -1,12 +1,12 @@
 module Pod
-	class SpecBuilder
-		def initialize(spec)
-			@spec = spec
-		end
+  class SpecBuilder
+    def initialize(spec)
+      @spec = spec
+    end
 
-		def spec_platform(platform)
-			fwk_base = @spec.name + '-' + platform.name.to_s + '.framework'
-            return <<SPEC
+    def spec_platform(platform)
+      fwk_base = @spec.name + '-' + platform.name.to_s + '.framework'
+      <<SPEC
   s.#{platform.name}.platform             = :#{platform.symbolic_name}, '#{platform.deployment_target}'
   s.#{platform.name}.preserve_paths       = '#{fwk_base}'
   s.#{platform.name}.public_header_files  = '#{fwk_base}/Versions/A/Headers/*.h'
@@ -14,10 +14,10 @@ module Pod
   s.#{platform.name}.vendored_frameworks  = '#{fwk_base}'
 
 SPEC
-		end
+    end
 
-		def spec_metadata
-        	return <<SPEC
+    def spec_metadata
+      <<SPEC
 Pod::Spec.new do |s|
   s.name          = "#{@spec.name}"
   s.version       = "#{@spec.version}"
@@ -28,12 +28,10 @@ Pod::Spec.new do |s|
   s.source        = #{@spec.source}
 
 SPEC
-      	end
+    end
 
-      	def spec_close
-      		return 'end'
-      	end
-
-	end
-
+    def spec_close
+      'end'
+    end
+  end
 end

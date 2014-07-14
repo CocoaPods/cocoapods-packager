@@ -1,0 +1,70 @@
+AllCops:
+  Include:
+    - Rakefile
+    - Gemfile
+    - ./*.gemspec
+  Exclude:
+    - spec/fixtures/**/*
+
+# At the moment not ready to be used
+# https://github.com/bbatsov/rubocop/issues/947
+Documentation:
+  Enabled: false
+
+#- CocoaPods -----------------------------------------------------------------#
+
+# We adopted raise instead of fail.
+SignalException:
+  EnforcedStyle: only_raise
+
+# They are idiomatic
+AssignmentInCondition:
+  Enabled: false
+
+# Allow backticks
+AsciiComments:
+  Enabled: false
+
+# Indentation clarifies logic branches in implementations
+IfUnlessModifier:
+  Enabled: false
+
+# No enforced convention here.
+SingleLineBlockParams:
+  Enabled: false
+
+# We only add the comment when needed.
+Encoding:
+  Enabled: false
+
+#- CocoaPods support for Ruby 1.8.7 ------------------------------------------#
+
+HashSyntax:
+  EnforcedStyle: hash_rockets
+
+Lambda:
+  Enabled: false
+
+DotPosition:
+  EnforcedStyle: trailing
+
+#- CocoaPods specs -----------------------------------------------------------#
+
+# Allow for `should.match /regexp/`.
+AmbiguousRegexpLiteral:
+  Exclude:
+    - spec/**/*
+
+# Allow `object.should == object` syntax.
+Void:
+  Exclude:
+    - spec/**/*
+
+ClassAndModuleChildren:
+  Exclude:
+    - spec/**/*
+
+UselessComparison:
+  Exclude:
+    - spec/**/*
+

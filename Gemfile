@@ -9,4 +9,3 @@ group :development do
   gem 'mocha', '~> 0.11.4'
   gem 'prettybacon', :git => 'https://github.com/irrationalfab/PrettyBacon.git', :branch => 'master'
 end
-
