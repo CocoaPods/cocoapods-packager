@@ -64,12 +64,17 @@ SPEC
         config.skip_repo_update   = true
 
         sandbox = install_pod(platform.name)
+
+        UI.puts 'Building framework'
         xcodebuild
+        defines = Symbols.mangle_for_pod_dependencies(@spec.name, config.sandbox_root)
+        xcodebuild(defines)
+
         versions_path, headers_path = create_framework_tree(platform.name.to_s)
         `cp #{sandbox.public_headers.root}/#{@spec.name}/*.h #{headers_path}`
 
         if platform.name == :ios
-          xcodebuild('-sdk iphonesimulator', 'build-sim')
+          xcodebuild(defines, '-sdk iphonesimulator', 'build-sim')
           `lipo #{config.sandbox_root}/build/libPods.a #{config.sandbox_root}/build-sim/libPods.a -create -output #{versions_path}/#{@spec.name}`
         else
           `cp #{config.sandbox_root}/build/libPods.a #{versions_path}/#{@spec.name}`
@@ -79,8 +84,8 @@ SPEC
         Pathname.new('Podfile.lock').delete
       end
 
-      def xcodebuild(args='', build_dir='build')
-        `xcodebuild CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -project #{config.sandbox_root}/Pods.xcodeproj 2>&1`
+      def xcodebuild(defines='', args='', build_dir='build')
+        `xcodebuild #{defines} CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -project #{config.sandbox_root}/Pods.xcodeproj 2>&1`
       end
 
       def create_framework_tree(platform)

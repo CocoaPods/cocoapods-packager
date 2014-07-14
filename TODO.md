@@ -2,5 +2,5 @@
 [ ] Handle frameworks in generated podspec
 [ ] Handle resources
 [ ] Write tests
-[ ] Implement symbol aliasing/mangling
 [ ] Implement various commandline options
+[ ] Make symbol aliasing configurable
