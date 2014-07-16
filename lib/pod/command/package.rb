@@ -66,7 +66,7 @@ module Pod
         xcodebuild(defines)
 
         versions_path, headers_path = create_framework_tree(platform.name.to_s)
-        `cp #{sandbox.public_headers.root}/#{@spec.name}/*.h #{headers_path}`
+        `cp #{sandbox.public_headers.root}/#{@spec.name}/**/*.h #{headers_path}`
 
         if platform.name == :ios
           xcodebuild(defines, '-sdk iphonesimulator', 'build-sim')
