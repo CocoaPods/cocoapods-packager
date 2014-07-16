@@ -4,7 +4,7 @@ module Pod
   class Command
     class Package < Command
       self.summary = 'Package a podspec into a static library.'
-      self.arguments = [['NAME', :required]]
+      self.arguments = [['NAME', :required], ['SOURCE']]
 
       def self.options
         [
@@ -14,8 +14,9 @@ module Pod
 
       def initialize(argv)
         @force = argv.flag?('force')
-
         @name = argv.shift_argument
+        @source = argv.shift_argument
+
         @spec = spec_with_path(@name)
         @spec = spec_with_name(@name) unless @spec
         super
@@ -45,7 +46,7 @@ module Pod
           `cp #{@path} #{work_dir}`
           Dir.chdir(work_dir)
 
-          builder = SpecBuilder.new(@spec)
+          builder = SpecBuilder.new(@spec, @source)
           newspec = builder.spec_metadata
 
           @spec.available_platforms.each do |platform|

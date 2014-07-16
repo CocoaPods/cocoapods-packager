@@ -1,7 +1,8 @@
 module Pod
   class SpecBuilder
-    def initialize(spec)
+    def initialize(spec, source)
       @spec = spec
+      @source = source.nil? ? '{}' : source
     end
 
     def spec_platform(platform)
@@ -25,7 +26,7 @@ Pod::Spec.new do |s|
   s.license       = #{@spec.license}
   s.authors       = #{@spec.authors}
   s.homepage      = "#{@spec.homepage}"
-  s.source        = #{@spec.source}
+  s.source        = #{@source}
 
 SPEC
     end
