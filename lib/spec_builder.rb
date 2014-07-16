@@ -5,7 +5,7 @@ module Pod
     end
 
     def spec_platform(platform)
-      fwk_base = @spec.name + '-' + platform.name.to_s + '.framework'
+      fwk_base = platform.name.to_s + '/' + @spec.name + '.framework'
       <<SPEC
   s.#{platform.name}.platform             = :#{platform.symbolic_name}, '#{platform.deployment_target}'
   s.#{platform.name}.preserve_paths       = '#{fwk_base}'
