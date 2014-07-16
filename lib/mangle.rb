@@ -19,7 +19,7 @@ module Symbols
       all_syms += syms.map! { |sym| sym + "=Pod#{pod_name}_" + sym }
     end
 
-    "GCC_PREPROCESSOR_DEFINITIONS='${inherited} #{all_syms.join(' ')}'"
+    "GCC_PREPROCESSOR_DEFINITIONS='${inherited} #{all_syms.uniq.join(' ')}'"
   end
 
   module_function :mangle_for_pod_dependencies
