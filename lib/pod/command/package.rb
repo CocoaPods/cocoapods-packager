@@ -98,7 +98,8 @@ module Pod
       end
 
       def create_framework_tree(platform)
-        root_path = Pathname.new(@spec.name + '-' + platform + '.framework')
+        Pathname.new(platform).mkdir()
+        root_path = Pathname.new(platform + '/' + @spec.name + '.framework')
         root_path.mkdir unless root_path.exist?
 
         versions_path = root_path + Pathname.new('Versions/A')
