@@ -6,7 +6,15 @@ module Pod
       self.summary = 'Package a podspec into a static library.'
       self.arguments = [['NAME', :required]]
 
+      def self.options
+        [
+          ['--force',  'Overwrite existing files.']
+        ]
+      end
+
       def initialize(argv)
+        @force = argv.flag?('force')
+
         @name = argv.shift_argument
         @spec = spec_with_path(@name)
         @spec = spec_with_name(@name) unless @spec
@@ -20,7 +28,16 @@ module Pod
 
       def run
         if @spec
-          original_dir = Dir.pwd
+          target_dir = "#{Dir.pwd}/#{@spec.name}-#{@spec.version}"
+          if File.exists? target_dir
+            if @force
+              Pathname.new(target_dir).rmtree
+            else
+              UI.puts "Target directory '#{target_dir}' already exists."
+              return
+            end
+          end
+
           work_dir = Dir.tmpdir() + '/cocoapods-' + Array.new(8){rand(36).to_s(36)}.join
 
           UI.puts 'Using build directory ' + work_dir
@@ -40,7 +57,7 @@ module Pod
           newspec += builder.spec_close
           File.open(@spec.name + '.podspec', 'w') { |file| file.write(newspec) }
 
-          `mv #{work_dir} #{original_dir}/#{@spec.name}-#{@spec.version}`
+          `mv #{work_dir} #{target_dir}`
         else
           help! 'Unable to find a podspec with path or name.'
         end
