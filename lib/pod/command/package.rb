@@ -60,7 +60,9 @@ module Pod
 
         UI.puts 'Building framework'
         xcodebuild
+        UI.puts 'Mangling symbols'
         defines = Symbols.mangle_for_pod_dependencies(@spec.name, config.sandbox_root)
+        UI.puts 'Building mangled framework'
         xcodebuild(defines)
 
         versions_path, headers_path = create_framework_tree(platform.name.to_s)
