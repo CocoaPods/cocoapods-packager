@@ -92,7 +92,7 @@ module Pod
       end
 
       def xcodebuild(defines = '', args = '', build_dir = 'build')
-        `xcodebuild #{defines} CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -project #{config.sandbox_root}/Pods.xcodeproj 2>&1`
+        `xcodebuild #{defines} CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -configuration Release -project #{config.sandbox_root}/Pods.xcodeproj 2>&1`
       end
 
       def create_framework_tree(platform)
