@@ -1,3 +1,5 @@
+require 'tmpdir'
+
 module Pod
   class Command
     class Package < Command
@@ -18,6 +20,12 @@ module Pod
 
       def run
         if @spec
+          work_dir = Dir.tmpdir() + '/cocoapods-' + Array.new(8){rand(36).to_s(36)}.join
+          UI.puts 'Using build directory ' + work_dir
+          Pathname.new(work_dir).mkdir
+          `cp #{@path} #{work_dir}`
+          Dir.chdir(work_dir)
+
           builder = SpecBuilder.new(@spec)
           newspec = builder.spec_metadata
 
@@ -29,6 +37,8 @@ module Pod
 
           newspec += builder.spec_close
           File.open(@spec.name + '.podspec', 'w') { |file| file.write(newspec) }
+
+          Pathname.new(work_dir).rmtree
         else
           help! 'Unable to find a podspec with path or name.'
         end
