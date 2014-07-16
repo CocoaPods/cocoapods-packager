@@ -100,11 +100,18 @@ module Pod
         Dir.glob("#{headers_source_root}/**/*.h")
           .each { |h| `ditto #{h} #{headers_path}/#{h.sub(headers_source_root, '')}` }
 
+        static_libs = Dir.glob("#{config.sandbox_root}/build/*.a").reject { |e| e =~ /libPods\.a$/ }
+
         if platform.name == :ios
+          `libtool -static -o #{config.sandbox_root}/build/package.a #{static_libs.join(' ')}`
+
           xcodebuild(defines, '-sdk iphonesimulator', 'build-sim')
-          `lipo #{config.sandbox_root}/build/libPods.a #{config.sandbox_root}/build-sim/libPods.a -create -output #{versions_path}/#{@spec.name}`
+          sim_libs = static_libs.map { |path| "#{config.sandbox_root}/build-sim/#{File.basename(path)}" }
+          `libtool -static -o #{config.sandbox_root}/build-sim/package.a #{sim_libs.join(' ')}`
+
+          `lipo #{config.sandbox_root}/build/package.a #{config.sandbox_root}/build-sim/libPods.a -create -output #{versions_path}/#{@spec.name}`
         else
-          `cp #{config.sandbox_root}/build/libPods.a #{versions_path}/#{@spec.name}`
+          `lipo #{static_libs.join(' ')} -create -output #{versions_path}/#{@spec.name}`
         end
 
         Pathname.new(config.sandbox_root).rmtree
