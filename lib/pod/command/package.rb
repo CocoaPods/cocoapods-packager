@@ -20,7 +20,9 @@ module Pod
 
       def run
         if @spec
+          original_dir = Dir.pwd
           work_dir = Dir.tmpdir() + '/cocoapods-' + Array.new(8){rand(36).to_s(36)}.join
+
           UI.puts 'Using build directory ' + work_dir
           Pathname.new(work_dir).mkdir
           `cp #{@path} #{work_dir}`
@@ -38,7 +40,7 @@ module Pod
           newspec += builder.spec_close
           File.open(@spec.name + '.podspec', 'w') { |file| file.write(newspec) }
 
-          Pathname.new(work_dir).rmtree
+          `mv #{work_dir} #{original_dir}/#{@spec.name}-#{@spec.version}`
         else
           help! 'Unable to find a podspec with path or name.'
         end
