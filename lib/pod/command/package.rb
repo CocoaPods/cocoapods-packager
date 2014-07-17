@@ -115,6 +115,13 @@ module Pod
           `lipo #{static_libs.join(' ')} -create -output #{versions_path}/#{@spec.name}`
         end
 
+        #bundle_path = resources_path + Pathname.new("#{spec.name}.bundle")
+        #bundle_path.mkpath unless bundle_path.exist?
+
+        license_file = @spec.license[:file]
+        license_file = 'LICENSE' unless license_file
+        `cp "#{config.sandbox_root}/#{@spec.name}/#{license_file}" .`
+
         Pathname.new(config.sandbox_root).rmtree
         Pathname.new('Podfile.lock').delete
       end
