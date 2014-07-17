@@ -11,7 +11,7 @@ module Pod
   s.#{platform.name}.platform             = :#{platform.symbolic_name}, '#{platform.deployment_target}'
   s.#{platform.name}.preserve_paths       = '#{fwk_base}'
   s.#{platform.name}.public_header_files  = '#{fwk_base}/Versions/A/Headers/*.h'
-  #s.#{platform.name}.resource            = '#{fwk_base}/Versions/A/Resources/#{fwk_base}.bundle'
+  s.#{platform.name}.resource             = '#{fwk_base}/Versions/A/Resources/*.bundle'
   s.#{platform.name}.vendored_frameworks  = '#{fwk_base}'
 
 SPEC

@@ -95,10 +95,11 @@ module Pod
         UI.puts 'Building mangled framework'
         xcodebuild(defines)
 
-        versions_path, headers_path = create_framework_tree(platform.name.to_s)
+        versions_path, headers_path, resources_path = create_framework_tree(platform.name.to_s)
         headers_source_root = "#{sandbox.public_headers.root}/#{@spec.name}"
         Dir.glob("#{headers_source_root}/**/*.h")
           .each { |h| `ditto #{h} #{headers_path}/#{h.sub(headers_source_root, '')}` }
+        `cp -rp #{config.sandbox_root}/build/*.bundle #{resources_path}`
 
         static_libs = Dir.glob("#{config.sandbox_root}/build/*.a").reject { |e| e =~ /libPods\.a$/ }
 
@@ -119,7 +120,7 @@ module Pod
       end
 
       def xcodebuild(defines = '', args = '', build_dir = 'build')
-        `xcodebuild #{defines} CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -configuration Release -project #{config.sandbox_root}/Pods.xcodeproj 2>&1`
+        `xcodebuild #{defines} CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -configuration Release -target Pods -project #{config.sandbox_root}/Pods.xcodeproj 2>&1`
       end
 
       def create_framework_tree(platform)
@@ -132,12 +133,15 @@ module Pod
         headers_path = versions_path + Pathname.new('Headers')
         headers_path.mkpath unless headers_path.exist?
 
+        resources_path = versions_path + Pathname.new('Resources')
+        resources_path.mkpath unless resources_path.exist?
+
         current_version_path = versions_path + Pathname.new('../Current')
         `ln -sf A #{current_version_path}`
         `ln -sf Versions/Current/Headers #{root_path}/`
         `ln -sf Versions/Current/#{@spec.name} #{root_path}/`
 
-        return versions_path, headers_path
+        return versions_path, headers_path, resources_path
       end
 
       def podfile_from_spec(platform_name, deployment_target)
