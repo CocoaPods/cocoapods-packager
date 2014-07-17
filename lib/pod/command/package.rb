@@ -112,7 +112,7 @@ module Pod
 
           `lipo #{config.sandbox_root}/build/package.a #{config.sandbox_root}/build-sim/libPods.a -create -output #{versions_path}/#{@spec.name}`
         else
-          `lipo #{static_libs.join(' ')} -create -output #{versions_path}/#{@spec.name}`
+          `libtool -static -o #{versions_path}/#{@spec.name} #{static_libs.join(' ')}`
         end
 
         #bundle_path = resources_path + Pathname.new("#{spec.name}.bundle")
