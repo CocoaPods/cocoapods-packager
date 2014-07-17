@@ -30,7 +30,7 @@ module Pod
       def run
         if @spec
           target_dir = "#{Dir.pwd}/#{@spec.name}-#{@spec.version}"
-          if File.exists? target_dir
+          if File.exist? target_dir
             if @force
               Pathname.new(target_dir).rmtree
             else
@@ -39,7 +39,7 @@ module Pod
             end
           end
 
-          work_dir = Dir.tmpdir() + '/cocoapods-' + Array.new(8){rand(36).to_s(36)}.join
+          work_dir = Dir.tmpdir + '/cocoapods-' + Array.new(8) { rand(36).to_s(36) }.join
 
           UI.puts 'Using build directory ' + work_dir
           Pathname.new(work_dir).mkdir
@@ -97,8 +97,8 @@ module Pod
 
         versions_path, headers_path, resources_path = create_framework_tree(platform.name.to_s)
         headers_source_root = "#{sandbox.public_headers.root}/#{@spec.name}"
-        Dir.glob("#{headers_source_root}/**/*.h")
-          .each { |h| `ditto #{h} #{headers_path}/#{h.sub(headers_source_root, '')}` }
+        Dir.glob("#{headers_source_root}/**/*.h").
+          each { |h| `ditto #{h} #{headers_path}/#{h.sub(headers_source_root, '')}` }
         `cp -rp #{config.sandbox_root}/build/*.bundle #{resources_path}`
 
         static_libs = Dir.glob("#{config.sandbox_root}/build/*.a").reject { |e| e =~ /libPods\.a$/ }
@@ -131,7 +131,7 @@ module Pod
       end
 
       def create_framework_tree(platform)
-        Pathname.new(platform).mkdir()
+        Pathname.new(platform).mkdir
         root_path = Pathname.new(platform + '/' + @spec.name + '.framework')
         root_path.mkdir unless root_path.exist?
 
