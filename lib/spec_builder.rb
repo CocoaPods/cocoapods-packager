@@ -18,7 +18,7 @@ SPEC
     end
 
     def spec_metadata
-      <<SPEC
+      spec = <<SPEC
 Pod::Spec.new do |s|
   s.name          = "#{@spec.name}"
   s.version       = "#{@spec.version}"
@@ -29,6 +29,17 @@ Pod::Spec.new do |s|
   s.source        = #{@source}
 
 SPEC
+
+      if @spec.available_platforms.length == 1
+        platform = @spec.available_platforms.first
+
+        spec += <<SPEC
+  s.platform      = :#{platform.symbolic_name}, '#{platform.deployment_target}'
+
+SPEC
+      end
+
+      spec
     end
 
     def spec_close
