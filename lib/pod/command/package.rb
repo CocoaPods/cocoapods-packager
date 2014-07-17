@@ -99,7 +99,7 @@ module Pod
         headers_source_root = "#{sandbox.public_headers.root}/#{@spec.name}"
         Dir.glob("#{headers_source_root}/**/*.h").
           each { |h| `ditto #{h} #{headers_path}/#{h.sub(headers_source_root, '')}` }
-        `cp -rp #{config.sandbox_root}/build/*.bundle #{resources_path}`
+        `cp -rp #{config.sandbox_root}/build/*.bundle #{resources_path} 2>&1`
 
         static_libs = Dir.glob("#{config.sandbox_root}/build/*.a").reject { |e| e =~ /libPods\.a$/ }
 
