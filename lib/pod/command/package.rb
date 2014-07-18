@@ -19,6 +19,7 @@ module Pod
         @name = argv.shift_argument
         @source = argv.shift_argument
 
+        @source_dir = Dir.pwd
         @spec = spec_with_path(@name)
         @spec = spec_with_name(@name) unless @spec
         super
@@ -31,7 +32,7 @@ module Pod
 
       def run
         if @spec
-          target_dir = "#{Dir.pwd}/#{@spec.name}-#{@spec.version}"
+          target_dir = "#{@source_dir}/#{@spec.name}-#{@spec.version}"
           if File.exist? target_dir
             if @force
               Pathname.new(target_dir).rmtree
@@ -122,8 +123,10 @@ module Pod
           `libtool -static -o #{versions_path}/#{@spec.name} #{static_libs.join(' ')}`
         end
 
-        #bundle_path = resources_path + Pathname.new("#{spec.name}.bundle")
-        #bundle_path.mkpath unless bundle_path.exist?
+        resources = expand_paths(@spec.consumer(platform).resources)
+        if resources.count > 0
+          `cp -rp #{resources.join(' ')} #{resources_path}`
+        end
 
         license_file = @spec.license[:file]
         license_file = 'LICENSE' unless license_file
@@ -131,6 +134,16 @@ module Pod
 
         Pathname.new(config.sandbox_root).rmtree
         Pathname.new('Podfile.lock').delete
+      end
+
+      def expand_paths(path_specs)
+        paths = []
+        
+        path_specs.each do |path_spec|
+          paths += Dir.glob(File.join(@source_dir, path_spec))
+        end
+
+        paths
       end
 
       def xcodebuild(defines = '', args = '', build_dir = 'build')
