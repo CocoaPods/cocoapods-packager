@@ -89,11 +89,16 @@ module Pod
         sandbox = install_pod(platform.name)
 
         UI.puts 'Building framework'
-        xcodebuild
-        UI.puts 'Mangling symbols'
-        defines = Symbols.mangle_for_pod_dependencies(@spec.name, config.sandbox_root)
-        UI.puts 'Building mangled framework'
-        xcodebuild(defines)
+
+        if @spec.dependencies.count > 0
+          xcodebuild
+          UI.puts 'Mangling symbols'
+          defines = Symbols.mangle_for_pod_dependencies(@spec.name, config.sandbox_root)
+          UI.puts 'Building mangled framework'
+          xcodebuild(defines)
+        else
+          xcodebuild
+        end
 
         versions_path, headers_path, resources_path = create_framework_tree(platform.name.to_s)
         headers_source_root = "#{sandbox.public_headers.root}/#{@spec.name}"
