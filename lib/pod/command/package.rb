@@ -8,12 +8,14 @@ module Pod
 
       def self.options
         [
-          ['--force',  'Overwrite existing files.']
+          ['--force',     'Overwrite existing files.'],
+          ['--no-mangle', 'Do not mangle symbols of depedendant Pods.']
         ]
       end
 
       def initialize(argv)
         @force = argv.flag?('force')
+        @mangle = argv.flag?('mangle', true)
         @name = argv.shift_argument
         @source = argv.shift_argument
 
@@ -90,7 +92,7 @@ module Pod
 
         UI.puts 'Building framework'
 
-        if @spec.dependencies.count > 0
+        if @spec.dependencies.count > 0 && @mangle
           xcodebuild
           UI.puts 'Mangling symbols'
           defines = Symbols.mangle_for_pod_dependencies(@spec.name, config.sandbox_root)
