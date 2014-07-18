@@ -33,57 +33,78 @@ module Pod
       end
 
       def run
-        if @spec
-          target_dir = "#{@source_dir}/#{@spec.name}-#{@spec.version}"
-          if File.exist? target_dir
-            if @force
-              Pathname.new(target_dir).rmtree
-            else
-              UI.puts "Target directory '#{target_dir}' already exists."
-              return
-            end
-          end
-
-          work_dir = Dir.tmpdir + '/cocoapods-' + Array.new(8) { rand(36).to_s(36) }.join
-
-          UI.puts 'Using build directory ' + work_dir
-          Pathname.new(work_dir).mkdir
-          `cp #{@path} #{work_dir}`
-          Dir.chdir(work_dir)
-
-          builder = SpecBuilder.new(@spec, @source)
-          newspec = builder.spec_metadata
-
-          @spec.available_platforms.each do |platform|
-            build_in_sandbox(platform)
-
-            newspec += builder.spec_platform(platform)
-          end
-
-          newspec += builder.spec_close
-          File.open(@spec.name + '.podspec', 'w') { |file| file.write(newspec) }
-
-          `mv #{work_dir} #{target_dir}`
-        else
+        if @spec.nil?
           help! 'Unable to find a podspec with path or name.'
+          return
         end
+
+        target_dir, work_dir = create_working_directory
+        return if target_dir.nil?
+        build_package
+        `mv #{work_dir} #{target_dir}`
+      end
+
+      :private
+
+      def build_package
+        builder = SpecBuilder.new(@spec, @source)
+        newspec = builder.spec_metadata
+
+        @spec.available_platforms.each do |platform|
+          build_in_sandbox(platform)
+
+          newspec += builder.spec_platform(platform)
+        end
+
+        newspec += builder.spec_close
+        File.open(@spec.name + '.podspec', 'w') { |file| file.write(newspec) }
+      end
+
+      def create_framework(platform)
+        fwk = Framework::Tree.new(@spec.name, platform, @embedded)
+        fwk.make
+        [fwk.root_path, fwk.versions_path, fwk.headers_path, fwk.resources_path]
+      end
+
+      def create_target_directory
+        target_dir = "#{@source_dir}/#{@spec.name}-#{@spec.version}"
+        if File.exist? target_dir
+          if @force
+            Pathname.new(target_dir).rmtree
+          else
+            UI.puts "Target directory '#{target_dir}' already exists."
+            nil
+          end
+        end
+        target_dir
+      end
+
+      def create_working_directory
+        target_dir = create_target_directory
+        return if target_dir.nil?
+
+        work_dir = Dir.tmpdir + '/cocoapods-' + Array.new(8) { rand(36).to_s(36) }.join
+        Pathname.new(work_dir).mkdir
+        `cp #{@path} #{work_dir}`
+        Dir.chdir(work_dir)
+
+        [target_dir, work_dir]
       end
 
       def spec_with_name(name)
-        return unless !name.nil?
+        return if name.nil?
 
         set = SourcesManager.search(Dependency.new(name))
+        return nil if set.nil?
 
-        if set
-          set.specification.root
-        end
+        set.specification.root
       end
 
       def spec_with_path(path)
-        if !path.nil? && Pathname.new(path).exist?
-          @path = path
-          Specification.from_file(path)
-        end
+        return if path.nil? || !Pathname.new(path).exist?
+
+        @path = path
+        Specification.from_file(path)
       end
 
       def build_in_sandbox(platform)
@@ -105,7 +126,7 @@ module Pod
           xcodebuild
         end
 
-        root_path, versions_path, headers_path, resources_path = create_framework_tree(platform.name.to_s)
+        root_path, versions_path, headers_path, resources_path = create_framework(platform.name.to_s)
         headers_source_root = "#{sandbox.public_headers.root}/#{@spec.name}"
         Dir.glob("#{headers_source_root}/**/*.h").
           each { |h| `ditto #{h} #{headers_path}/#{h.sub(headers_source_root, '')}` }
@@ -150,7 +171,7 @@ module Pod
 
       def expand_paths(path_specs)
         paths = []
-        
+
         path_specs.each do |path_spec|
           paths += Dir.glob(File.join(@source_dir, path_spec))
         end
@@ -162,37 +183,10 @@ module Pod
         `xcodebuild #{defines} CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -configuration Release -target Pods -project #{config.sandbox_root}/Pods.xcodeproj 2>&1`
       end
 
-      def create_framework_tree(platform)
-        root_path = Pathname.new(platform)
-        if @embedded
-          root_path += Pathname.new(@spec.name + '.embeddedframwork')
-        end
-        root_path.mkpath unless root_path.exist?
-
-        fwk_path = root_path + Pathname.new(@spec.name + '.framework')
-        fwk_path.mkdir unless fwk_path.exist?
-
-        versions_path = fwk_path + Pathname.new('Versions/A')
-
-        headers_path = versions_path + Pathname.new('Headers')
-        headers_path.mkpath unless headers_path.exist?
-
-        resources_path = versions_path + Pathname.new('Resources')
-        resources_path.mkpath unless resources_path.exist?
-
-        current_version_path = versions_path + Pathname.new('../Current')
-        `ln -sf A #{current_version_path}`
-        `ln -sf Versions/Current/Headers #{fwk_path}/`
-        `ln -sf Versions/Current/Resources #{fwk_path}/`
-        `ln -sf Versions/Current/#{@spec.name} #{fwk_path}/`
-
-        return root_path, versions_path, headers_path, resources_path
-      end
-
       def podfile_from_spec(platform_name, deployment_target)
         name     = @spec.name
         path     = @path
-        podfile  = Pod::Podfile.new do
+        Pod::Podfile.new do
           platform(platform_name, deployment_target)
           if path
             pod name, :podspec => path
@@ -200,7 +194,6 @@ module Pod
             pod name, :path => '.'
           end
         end
-        podfile
       end
 
       def install_pod(platform_name)

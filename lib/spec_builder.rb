@@ -18,7 +18,19 @@ SPEC
     end
 
     def spec_metadata
-      spec = <<SPEC
+      spec = spec_header
+      spec += spec_single_platform_fix
+      spec
+    end
+
+    def spec_close
+      'end'
+    end
+
+    :private
+
+    def spec_header
+      <<SPEC
 Pod::Spec.new do |s|
   s.name          = "#{@spec.name}"
   s.version       = "#{@spec.version}"
@@ -29,21 +41,17 @@ Pod::Spec.new do |s|
   s.source        = #{@source}
 
 SPEC
+    end
 
-      if @spec.available_platforms.length == 1
-        platform = @spec.available_platforms.first
+    def spec_single_platform_fix
+      return '' if @spec.available_platforms.length > 1
 
-        spec += <<SPEC
+      platform = @spec.available_platforms.first
+
+      <<SPEC
   s.platform      = :#{platform.symbolic_name}, '#{platform.deployment_target}'
 
 SPEC
-      end
-
-      spec
-    end
-
-    def spec_close
-      'end'
     end
   end
 end
