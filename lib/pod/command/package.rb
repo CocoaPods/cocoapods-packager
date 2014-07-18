@@ -9,11 +9,13 @@ module Pod
       def self.options
         [
           ['--force',     'Overwrite existing files.'],
-          ['--no-mangle', 'Do not mangle symbols of depedendant Pods.']
+          ['--no-mangle', 'Do not mangle symbols of depedendant Pods.'],
+          ['--embedded',  'Generate embedded frameworks.']
         ]
       end
 
       def initialize(argv)
+        @embedded = argv.flag?('embedded')
         @force = argv.flag?('force')
         @mangle = argv.flag?('mangle', true)
         @name = argv.shift_argument
@@ -103,7 +105,7 @@ module Pod
           xcodebuild
         end
 
-        versions_path, headers_path, resources_path = create_framework_tree(platform.name.to_s)
+        root_path, versions_path, headers_path, resources_path = create_framework_tree(platform.name.to_s)
         headers_source_root = "#{sandbox.public_headers.root}/#{@spec.name}"
         Dir.glob("#{headers_source_root}/**/*.h").
           each { |h| `ditto #{h} #{headers_path}/#{h.sub(headers_source_root, '')}` }
@@ -126,6 +128,16 @@ module Pod
         resources = expand_paths(@spec.consumer(platform).resources)
         if resources.count > 0
           `cp -rp #{resources.join(' ')} #{resources_path}`
+        end
+
+        if @embedded
+          target_path = root_path + Pathname.new('Resources')
+          target_path.mkdir unless target_path.exist?
+
+          Dir.glob(resources_path.to_s + '/*').each do |resource|
+            resource = Pathname.new(resource).relative_path_from(target_path)
+            `ln -sf #{resource} #{target_path}`
+          end
         end
 
         license_file = @spec.license[:file]
@@ -151,11 +163,16 @@ module Pod
       end
 
       def create_framework_tree(platform)
-        Pathname.new(platform).mkdir
-        root_path = Pathname.new(platform + '/' + @spec.name + '.framework')
-        root_path.mkdir unless root_path.exist?
+        root_path = Pathname.new(platform)
+        if @embedded
+          root_path += Pathname.new(@spec.name + '.embeddedframwork')
+        end
+        root_path.mkpath unless root_path.exist?
 
-        versions_path = root_path + Pathname.new('Versions/A')
+        fwk_path = root_path + Pathname.new(@spec.name + '.framework')
+        fwk_path.mkdir unless fwk_path.exist?
+
+        versions_path = fwk_path + Pathname.new('Versions/A')
 
         headers_path = versions_path + Pathname.new('Headers')
         headers_path.mkpath unless headers_path.exist?
@@ -165,10 +182,11 @@ module Pod
 
         current_version_path = versions_path + Pathname.new('../Current')
         `ln -sf A #{current_version_path}`
-        `ln -sf Versions/Current/Headers #{root_path}/`
-        `ln -sf Versions/Current/#{@spec.name} #{root_path}/`
+        `ln -sf Versions/Current/Headers #{fwk_path}/`
+        `ln -sf Versions/Current/Resources #{fwk_path}/`
+        `ln -sf Versions/Current/#{@spec.name} #{fwk_path}/`
 
-        return versions_path, headers_path, resources_path
+        return root_path, versions_path, headers_path, resources_path
       end
 
       def podfile_from_spec(platform_name, deployment_target)
