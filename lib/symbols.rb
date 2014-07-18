@@ -21,11 +21,11 @@ module Symbols
     consts = syms.select { |const| const[/ S /] }
     consts = consts.select { |const| const !~ /OBJC|\.eh/ }
     consts = consts.uniq
-    consts = consts.map! { |const| const.gsub(/^.*_/, '') }
+    consts = consts.map! { |const| const.gsub(/^.* _/, '') }
 
     other_consts = syms.select { |const| const[/ T /] }
     other_consts = other_consts.uniq
-    other_consts = other_consts.map! { |const| const.gsub(/^.*_/, '') }
+    other_consts = other_consts.map! { |const| const.gsub(/^.* _/, '') }
 
     consts + other_consts
   end
