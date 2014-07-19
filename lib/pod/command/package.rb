@@ -80,7 +80,7 @@ module Pod
             Pathname.new(target_dir).rmtree
           else
             UI.puts "Target directory '#{target_dir}' already exists."
-            nil
+            return nil
           end
         end
         target_dir
