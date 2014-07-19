@@ -1,5 +1,7 @@
 require 'pod/command/package'
+require 'builder'
 require 'framework'
 require 'mangle'
+require 'pod_utils'
 require 'spec_builder'
 require 'symbols'
