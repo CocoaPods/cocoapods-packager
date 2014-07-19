@@ -11,9 +11,8 @@ module Pod
   s.#{platform.name}.platform             = :#{platform.symbolic_name}, '#{platform.deployment_target}'
   s.#{platform.name}.preserve_paths       = '#{fwk_base}'
   s.#{platform.name}.public_header_files  = '#{fwk_base}/Versions/A/Headers/*.h'
-  s.#{platform.name}.resource             = '#{fwk_base}/Versions/A/Resources/*.bundle'
+  s.#{platform.name}.resource             = '#{fwk_base}/Versions/A/Resources/**/*'
   s.#{platform.name}.vendored_frameworks  = '#{fwk_base}'
-
 SPEC
     end
 
@@ -30,17 +29,18 @@ SPEC
     :private
 
     def spec_header
-      <<SPEC
-Pod::Spec.new do |s|
-  s.name          = "#{@spec.name}"
-  s.version       = "#{@spec.version}"
-  s.summary       = "#{@spec.summary}"
-  s.license       = #{@spec.license}
-  s.authors       = #{@spec.authors}
-  s.homepage      = "#{@spec.homepage}"
-  s.source        = #{@source}
+      spec = "Pod::Spec.new do |s|\n"
 
-SPEC
+      %w(name version summary license authors homepage description social_media_url
+         docset_url documentation_url screenshots).each do |attribute|
+        value = @spec.attributes_hash[attribute]
+        next if value.nil?
+
+        value = "'#{value}'" if value.class == String
+        spec += "  s.#{attribute} = #{value}\n"
+      end
+
+      spec + "  s.source = #{@source}\n\n"
     end
 
     def spec_single_platform_fix
@@ -49,8 +49,7 @@ SPEC
       platform = @spec.available_platforms.first
 
       <<SPEC
-  s.platform      = :#{platform.symbolic_name}, '#{platform.deployment_target}'
-
+  s.platform = :#{platform.symbolic_name}, '#{platform.deployment_target}'
 SPEC
     end
   end
