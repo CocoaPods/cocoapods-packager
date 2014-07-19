@@ -11,7 +11,7 @@ module Pod
           ['--force',     'Overwrite existing files.'],
           ['--no-mangle', 'Do not mangle symbols of depedendant Pods.'],
           ['--embedded',  'Generate embedded frameworks.'],
-          ['--library'],  'Generate static libraries.'
+          ['--library',  'Generate static libraries.']
         ]
       end
 
