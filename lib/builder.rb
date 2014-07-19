@@ -117,13 +117,9 @@ module Pod
     end
 
     def expand_paths(path_specs)
-      paths = []
-
-      path_specs.each do |path_spec|
-        paths += Dir.glob(File.join(@source_dir, path_spec))
+      path_specs.map do |path_spec|
+        Dir.glob(File.join(@source_dir, path_spec))
       end
-
-      paths
     end
 
     def static_libs_in_sandbox
