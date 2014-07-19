@@ -8,11 +8,30 @@ module Pod
       @embedded = embedded
     end
 
+    def build(platform, library)
+      if library
+        build_static_library(platform)
+      else
+        build_framework(platform)
+      end
+    end
+
+    def build_static_library(platform)
+      UI.puts('Building static library')
+
+      defines = compile
+      platform_path = Pathname.new(platform.name.to_s)
+      platform_path.mkdir unless platform_path.exist?
+      build_library(platform, defines, platform_path + Pathname.new("lib#{@spec.name}.a"))
+    end
+
     def build_framework(platform)
+      UI.puts('Building framework')
+
       defines = compile
       create_framework(platform.name.to_s)
       copy_headers
-      build_library(platform, defines)
+      build_library(platform, defines, @fwk.versions_path + Pathname.new(@spec.name))
       copy_license
       copy_resources(platform)
     end
@@ -29,8 +48,7 @@ module Pod
 
     :private
 
-    def build_library(platform, defines)
-      output = @fwk.versions_path + Pathname.new(@spec.name)
+    def build_library(platform, defines, output)
       static_libs = static_libs_in_sandbox
 
       if platform.name == :ios
@@ -62,8 +80,6 @@ module Pod
     end
 
     def compile
-      UI.puts 'Building framework'
-
       if @spec.dependencies.count > 0 && @mangle
         xcodebuild
         build_with_mangling(defines)

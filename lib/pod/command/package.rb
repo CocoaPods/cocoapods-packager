@@ -10,13 +10,15 @@ module Pod
         [
           ['--force',     'Overwrite existing files.'],
           ['--no-mangle', 'Do not mangle symbols of depedendant Pods.'],
-          ['--embedded',  'Generate embedded frameworks.']
+          ['--embedded',  'Generate embedded frameworks.'],
+          ['--library'],  'Generate static libraries.'
         ]
       end
 
       def initialize(argv)
         @embedded = argv.flag?('embedded')
         @force = argv.flag?('force')
+        @library = argv.flag?('library')
         @mangle = argv.flag?('mangle', true)
         @name = argv.shift_argument
         @source = argv.shift_argument
@@ -106,7 +108,7 @@ module Pod
           @spec,
           @embedded)
 
-        builder.build_framework(platform)
+        builder.build(platform, @library)
 
         return unless @embedded
         builder.link_embedded_resources
