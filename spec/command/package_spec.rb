@@ -7,7 +7,7 @@ module Pod
         Command.parse(%w{ package }).should.be.instance_of Command::Package
       end
 
-      it 'presents the help if no spec is provide' do
+      it 'presents the help if no spec is provided' do
         command = Command.parse(%w{ package })
         should.raise CLAide::Help do
           command.validate!
