@@ -5,7 +5,7 @@ module Pod
 
       def install_pod(platform_name)
         podfile = podfile_from_spec(
-          @path,
+          File.basename(@path),
           @spec.name,
           platform_name,
           @spec.deployment_target(platform_name))
