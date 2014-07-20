@@ -32,12 +32,12 @@ module Pod
         true.should == true  # To make the test pass without any shoulds
       end
 
-      it "runs with a spec in the master repository" do
-        command = Command.parse(%w{ package KFData })
-        command.run
+      #it "runs with a spec in the master repository" do
+      #  command = Command.parse(%w{ package KFData })
+      #  command.run
 
-        true.should == true  # To make the test pass without any shoulds
-      end
+      #  true.should == true  # To make the test pass without any shoulds
+      #end
     end
   end
 end
