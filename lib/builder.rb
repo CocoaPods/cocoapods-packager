@@ -1,11 +1,12 @@
 module Pod
   class Builder
-    def initialize(source_dir, sandbox_root, public_headers_root, spec, embedded)
+    def initialize(source_dir, sandbox_root, public_headers_root, spec, embedded, mangle)
       @source_dir = source_dir
       @sandbox_root = sandbox_root
       @public_headers_root = public_headers_root
       @spec = spec
       @embedded = embedded
+      @mangle = mangle
     end
 
     def build(platform, library)
@@ -72,22 +73,22 @@ module Pod
       `libtool -static -o #{output} #{static_libs.join(' ')}`
     end
 
-    def build_with_mangling(defines)
+    def build_with_mangling
       UI.puts 'Mangling symbols'
       defines = Symbols.mangle_for_pod_dependencies(@spec.name, @sandbox_root)
       UI.puts 'Building mangled framework'
       xcodebuild(defines)
+      return defines
     end
 
     def compile
       if @spec.dependencies.count > 0 && @mangle
         xcodebuild
-        build_with_mangling(defines)
-        defines
+        return build_with_mangling
       end
 
       xcodebuild
-      nil
+      ''
     end
 
     def copy_headers

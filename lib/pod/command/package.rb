@@ -106,7 +106,8 @@ module Pod
           config.sandbox_root,
           sandbox.public_headers.root,
           @spec,
-          @embedded)
+          @embedded,
+          @mangle)
 
         builder.build(platform, @library)
 
