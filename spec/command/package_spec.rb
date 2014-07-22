@@ -3,6 +3,11 @@ require File.expand_path('../../spec_helper', __FILE__)
 module Pod
   describe Command::Spec::Package do
     describe 'CLAide' do
+      after do
+        Dir.glob("KFData-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("NikeKit-*").each { |dir| Pathname.new(dir).rmtree }
+      end
+
       it 'registers itself' do
         Command.parse(%w{ package }).should.be.instance_of Command::Package
       end
@@ -21,6 +26,29 @@ module Pod
         should.raise CLAide::Help do
           command.run
         end.message.should.match /Unable to find/
+      end
+
+      it "mangles symbols if the Pod has dependencies" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
+        command.run
+
+        lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
+        symbols = Symbols.symbols_from_library(lib).uniq.sort.reject { |e| e =~ /PodNikeKit/ }
+        symbols.should == %w{ BBUNikePlusActivity BBUNikePlusSessionManager 
+                              BBUNikePlusTag PodsDummy_Pods_NikeKit }
+      end
+
+      it "does not mangle symbols if option --no-mangle is specified" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --no-mangle })
+        command.run
+
+        lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
+        symbols = Symbols.symbols_from_library(lib).uniq.sort.select { |e| e =~ /PodNikeKit/ }
+        symbols.should == []
       end
 
       it "runs with a path to a spec" do

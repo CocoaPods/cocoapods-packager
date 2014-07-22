@@ -44,6 +44,7 @@ module Pod
         return if target_dir.nil?
         build_package
         `mv #{work_dir} #{target_dir}`
+        Dir.chdir(@source_dir)
       end
 
       :private
@@ -58,7 +59,7 @@ module Pod
         perform_build(platform, sandbox)
 
         Pathname.new(config.sandbox_root).rmtree
-        Pathname.new('Podfile.lock').delete
+        FileUtils.rm_f('Podfile.lock')
       end
 
       def build_package
