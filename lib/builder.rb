@@ -63,10 +63,10 @@ module Pod
       `libtool -static -o #{@sandbox_root}/build/package.a #{static_libs.join(' ')}`
 
       xcodebuild(defines, '-sdk iphonesimulator', 'build-sim')
-      sim_libs = static_libs.map { |path| "#{@sandbox_root}/build-sim/#{File.basename(path)}" }
+      sim_libs = static_libs_in_sandbox('build-sim')
       `libtool -static -o #{@sandbox_root}/build-sim/package.a #{sim_libs.join(' ')}`
 
-      `lipo #{@sandbox_root}/build/package.a #{@sandbox_root}/build-sim/libPods.a -create -output #{output}`
+      `lipo #{@sandbox_root}/build/package.a #{@sandbox_root}/build-sim/package.a -create -output #{output}`
     end
 
     def build_static_lib_for_mac(static_libs, output)
@@ -123,8 +123,8 @@ module Pod
       end
     end
 
-    def static_libs_in_sandbox
-      Dir.glob("#{@sandbox_root}/build/*.a").reject { |e| e =~ /libPods\.a$/ }
+    def static_libs_in_sandbox(build_dir='build')
+      Dir.glob("#{@sandbox_root}/#{build_dir}/*.a").reject { |e| e =~ /libPods\.a$/ }
     end
 
     def xcodebuild(defines = '', args = '', build_dir = 'build')
