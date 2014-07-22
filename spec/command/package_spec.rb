@@ -37,7 +37,7 @@ module Pod
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
         symbols = Symbols.symbols_from_library(lib).uniq.sort.reject { |e| e =~ /PodNikeKit/ }
         symbols.should == %w{ BBUNikePlusActivity BBUNikePlusSessionManager 
-                              BBUNikePlusTag PodsDummy_Pods_NikeKit }
+                              BBUNikePlusTag }
       end
 
       it "does not mangle symbols if option --no-mangle is specified" do
