@@ -23,7 +23,7 @@ SPEC
     end
 
     def spec_close
-      'end'
+      "end\n"
     end
 
     :private
