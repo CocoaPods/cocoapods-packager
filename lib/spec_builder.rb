@@ -40,7 +40,7 @@ SPEC
         spec += "  s.#{attribute} = #{value}\n"
       end
 
-      spec + "  s.source = #{@source}\n\n"
+      spec + "  s.source = '#{@source}'\n\n"
     end
 
     def spec_single_platform_fix
