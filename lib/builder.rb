@@ -82,12 +82,12 @@ module Pod
     end
 
     def compile
+      xcodebuild
+
       if @spec.dependencies.count > 0 && @mangle
-        xcodebuild
         return build_with_mangling
       end
 
-      xcodebuild
       ''
     end
 
