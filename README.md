@@ -17,13 +17,13 @@ There are still a number of advantages to developing against a `podspec`, even i
 ## Installation
 
 ```sh
-$ gem install cocoapods-archive
+$ gem install cocoapods-packager
 ```
 
 or add a line to your Gemfile:
 
 ```ruby
-gem "cocoapods-archive"
+gem "cocoapods-packager"
 ```
 
 then run `bundle install`.
