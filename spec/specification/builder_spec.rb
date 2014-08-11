@@ -7,7 +7,7 @@ module Pod
         second_spec.attributes_hash[attribute_name]
 
       %w(ios osx).each do |platform|
-        first_spec.attributes_hash[platform][attribute_name].should == 
+        first_spec.attributes_hash[platform][attribute_name].should ==
           second_spec.attributes_hash[platform][attribute_name]
       end
     end
@@ -24,7 +24,7 @@ module Pod
   	describe 'Preserve attributes from source specification' do
       before do
         @spec = Specification.from_file('spec/fixtures/Builder.podspec')
-        @builder = SpecBuilder.new(@spec, nil)
+        @builder = SpecBuilder.new(@spec, nil, false)
       end
 
   		it "preserves platform.frameworks" do

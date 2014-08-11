@@ -1,12 +1,22 @@
 module Pod
   class SpecBuilder
-    def initialize(spec, source)
+    def initialize(spec, source, embedded)
       @spec = spec
       @source = source.nil? ? '{}' : source
+      @embedded = embedded
+    end
+
+    def framework_path
+      if @embedded
+        @spec.name + '.embeddedframework' + '/' + @spec.name + '.framework'
+      else
+        @spec.name + '.framework'
+      end
     end
 
     def spec_platform(platform)
-      fwk_base = platform.name.to_s + '/' + @spec.name + '.framework'
+
+      fwk_base = platform.name.to_s + '/' + framework_path
       spec = <<SPEC
   s.#{platform.name}.platform             = :#{platform.symbolic_name}, '#{platform.deployment_target}'
   s.#{platform.name}.preserve_paths       = '#{fwk_base}'

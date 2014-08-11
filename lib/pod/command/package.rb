@@ -63,7 +63,7 @@ module Pod
       end
 
       def build_package
-        builder = SpecBuilder.new(@spec, @source)
+        builder = SpecBuilder.new(@spec, @source, @embedded)
         newspec = builder.spec_metadata
 
         @spec.available_platforms.each do |platform|
