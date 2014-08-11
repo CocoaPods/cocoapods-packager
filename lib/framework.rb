@@ -50,7 +50,7 @@ module Framework
       @root_path = Pathname.new(@platform)
 
       if @embedded
-        @root_path += Pathname.new(@name + '.embeddedframwork')
+        @root_path += Pathname.new(@name + '.embeddedframework')
       end
 
       @root_path.mkpath unless @root_path.exist?
