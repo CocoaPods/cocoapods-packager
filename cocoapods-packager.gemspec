@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.name = 'cocoapods-packager'
   spec.version = Pod::Packager::VERSION
   spec.authors = ['Kyle Fuller']
-  spec.summary = ''
+  spec.summary = 'CocoaPods plugin which allows you to generate a framework or static library from a podspec.'
   spec.homepage = 'https://github.com/CocoaPods/cocoapods-packager'
   spec.license = 'MIT'
   spec.files = `git ls-files`.split($/)
