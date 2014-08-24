@@ -41,6 +41,17 @@ module Pod
         return if path.nil? || !Pathname.new(path).exist?
 
         @path = path
+
+        if Pathname.new(path).directory?
+          help! path + ': is a directory.'
+          return
+        end
+
+        if !['.podspec', '.json'].include? Pathname.new(path).extname 
+          help! path + ': is not a podspec.'
+          return
+        end
+
         Specification.from_file(path)
       end
     end
