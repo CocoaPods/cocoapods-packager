@@ -6,6 +6,7 @@ module Pod
       after do
         Dir.glob("KFData-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("NikeKit-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("foo-bar-*").each { |dir| Pathname.new(dir).rmtree }
       end
 
       it 'registers itself' do
@@ -49,6 +50,15 @@ module Pod
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
         symbols = Symbols.symbols_from_library(lib).uniq.sort.select { |e| e =~ /PodNikeKit/ }
         symbols.should == []
+      end
+
+      it "does not fail when the pod name contains a dash" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/foo-bar.podspec })
+        command.run
+
+        true.should == true  # To make the test pass without any shoulds
       end
 
       it "runs with a path to a spec" do
