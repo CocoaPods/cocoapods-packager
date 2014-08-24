@@ -5,6 +5,11 @@ module Framework
     attr_reader :root_path
     attr_reader :versions_path
 
+    def delete_resources
+      Pathname.new(@resources_path).rmtree
+      (Pathname.new(@fwk_path) + Pathname.new('Resources')).delete
+    end
+
     def initialize(name, platform, embedded)
       @name = name
       @platform = platform

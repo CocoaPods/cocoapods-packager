@@ -108,7 +108,10 @@ module Pod
       `cp -rp #{@sandbox_root}/build/*.bundle #{@fwk.resources_path} 2>&1`
 
       resources = expand_paths(@spec.consumer(platform).resources)
-      return if resources.count == 0
+      if resources.count == 0
+        @fwk.delete_resources
+        return
+      end
       `cp -rp #{resources.join(' ')} #{@fwk.resources_path}`
     end
 
