@@ -28,6 +28,19 @@ module Pod
         end
       end
 
+      def source_files_available?(spec)
+        deps = spec.dependencies.map { |dep| spec_with_name(dep.name) }
+
+        [spec, *deps].each do |specification|
+          source_files = specification.attributes_hash['source_files']
+          if source_files.nil?
+            return false
+          end
+        end
+
+        true
+      end
+
       def spec_with_name(name)
         return if name.nil?
 

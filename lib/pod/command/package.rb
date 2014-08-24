@@ -32,6 +32,10 @@ module Pod
       def validate!
         super
         help! 'A podspec name or path is required.' unless @spec
+
+        if !source_files_available? @spec
+          help! 'podspec has binary-only depedencies, mangling not possible.'
+        end
       end
 
       def run

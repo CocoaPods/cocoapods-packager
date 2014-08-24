@@ -2,6 +2,10 @@ require File.expand_path('../../spec_helper', __FILE__)
 
 module Pod
   describe 'Packager' do
+    after do
+        Dir.glob("CPDColors-*").each { |dir| Pathname.new(dir).rmtree }
+      end
+
     it 'presents the help if a directory is provided' do
       should.raise CLAide::Help do
         command = Command.parse(%w{ package spec })
@@ -12,6 +16,20 @@ module Pod
       should.raise CLAide::Help do
         command = Command.parse(%w{ package README.md })
       end.message.should.match /is not a podspec/
+    end
+
+    it 'presents the help if a podspec with binary-only dependencies is used' do
+      command = Command.parse(%w{ package spec/fixtures/CPDColors.podspec })
+      should.raise CLAide::Help do
+        command.validate!
+      end.message.should.match /binary-only/
+    end
+
+    it 'can package a podspec with binary-only dependencies if --no-mangle is specified' do
+      command = Command.parse(%w{ package spec/fixtures/CPDColors.podspec --no-mangle })
+      command.run
+
+      true.should == true  # To make the test pass without any shoulds
     end
   end
 end
