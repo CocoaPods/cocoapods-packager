@@ -84,7 +84,7 @@ module Pod
     def compile
       xcodebuild
 
-      if @spec.dependencies.count > 0 && @mangle
+      if dependency_count > 0 && @mangle
         return build_with_mangling
       end
 
@@ -118,6 +118,16 @@ module Pod
     def create_framework(platform)
       @fwk = Framework::Tree.new(@spec.name, platform, @embedded)
       @fwk.make
+    end
+
+    def dependency_count
+      count = @spec.dependencies.count
+
+      @spec.subspecs.each do |subspec|
+        count += subspec.dependencies.count
+      end
+
+      count
     end
 
     def expand_paths(path_specs)
