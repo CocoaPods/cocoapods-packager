@@ -1,7 +1,9 @@
 # CocoaPods Packager
 
-[![Build Status](https://travis-ci.org/CocoaPods/cocoapods-packager.png?branch=master)](https://travis-ci.org/CocoaPods/cocoapods-packager)
+[![Build Status](http://img.shields.io/travis/CocoaPods/cocoapods-packager/master.svg?style=flat)](https://travis-ci.org/CocoaPods/cocoapods-packager)
 [![Coverage Status](https://img.shields.io/coveralls/CocoaPods/cocoapods-packager.svg)](https://coveralls.io/r/CocoaPods/cocoapods-packager?branch=master)
+[![Gem Version](http://img.shields.io/gem/v/cocoapods-packager.svg?style=flat)](http://badge.fury.io/rb/cocoapods-packager)
+[![Code Climate](http://img.shields.io/codeclimate/github/CocoaPods/cocoapods-packager.svg?style=flat)](https://codeclimate.com/github/CocoaPods/cocoapods-packager)
 
 CocoaPods plugin which allows you to generate a framework or static library from a podspec.
 
