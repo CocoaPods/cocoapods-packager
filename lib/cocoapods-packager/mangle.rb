@@ -8,8 +8,6 @@ module Symbols
   # 	- put defines into `GCC_PREPROCESSOR_DEFINITIONS` for passing to Xcode
   #
   def mangle_for_pod_dependencies(pod_name, sandbox_root)
-    pod_name = pod_name.gsub!('-', '_')
-
     pod_libs = Dir.glob("#{sandbox_root}/build/libPods-*.a").select do
       |file| file !~ /#{pod_name}/
     end
@@ -26,6 +24,7 @@ module Symbols
   end
 
   def alias_symbol(sym, pod_name)
+    pod_name = pod_name.gsub('-', '_')
     sym + "=Pod#{pod_name}_" + sym
   end
 
