@@ -1,0 +1,21 @@
+## CocoaPods
+
+Pods
+
+## Node
+
+node_modules
+
+## OS X
+
+.DS_Store
+
+## Other
+
+.pt
+NikeKit.framework
+
+## Xcode
+
+*.xccheckout
+xcuserdata
