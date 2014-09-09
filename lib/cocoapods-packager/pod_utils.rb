@@ -28,17 +28,18 @@ module Pod
         end
       end
 
-      def source_files_available?(spec)
+      def binary_only?(spec)
         deps = spec.dependencies.map { |dep| spec_with_name(dep.name) }
 
         [spec, *deps].each do |specification|
-          source_files = specification.attributes_hash['source_files']
-          if source_files.nil?
-            return false
+          ['vendored_frameworks', 'vendored_libraries'].each do |attrib|
+            if specification.attributes_hash[attrib]
+              return true
+            end
           end
         end
 
-        true
+        false
       end
 
       def spec_with_name(name)

@@ -4,6 +4,7 @@ module Pod
   describe 'Packager' do
     after do
         Dir.glob("CPDColors-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("layer-client-messaging-schema-*").each { |dir| Pathname.new(dir).rmtree }
       end
 
     it 'presents the help if a directory is provided' do
@@ -23,6 +24,13 @@ module Pod
       should.raise CLAide::Help do
         command.validate!
       end.message.should.match /binary-only/
+    end
+
+    it 'can package a podspec with only resources' do
+      command = Command.parse(%w{ package spec/fixtures/layer-client-messaging-schema.podspec --no-mangle })
+      command.run
+
+      true.should == true  # To make the test pass without any shoulds
     end
 
     it 'can package a podspec with binary-only dependencies if --no-mangle is specified' do

@@ -33,7 +33,7 @@ module Pod
         super
         help! 'A podspec name or path is required.' unless @spec
 
-        if !source_files_available? @spec
+        if binary_only? @spec
           help! 'podspec has binary-only depedencies, mangling not possible.'
         end
       end
