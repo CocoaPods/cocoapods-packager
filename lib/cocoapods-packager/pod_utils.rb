@@ -32,7 +32,7 @@ module Pod
         deps = spec.dependencies.map { |dep| spec_with_name(dep.name) }
 
         [spec, *deps].each do |specification|
-          ['vendored_frameworks', 'vendored_libraries'].each do |attrib|
+          %w(vendored_frameworks vendored_libraries).each do |attrib|
             if specification.attributes_hash[attrib]
               return true
             end
@@ -61,7 +61,7 @@ module Pod
           return
         end
 
-        if !['.podspec', '.json'].include? Pathname.new(path).extname 
+        unless ['.podspec', '.json'].include? Pathname.new(path).extname
           help! path + ': is not a podspec.'
           return
         end

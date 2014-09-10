@@ -15,7 +15,6 @@ module Pod
     end
 
     def spec_platform(platform)
-
       fwk_base = platform.name.to_s + '/' + framework_path
       spec = <<SPEC
   s.#{platform.name}.platform             = :#{platform.symbolic_name}, '#{platform.deployment_target}'

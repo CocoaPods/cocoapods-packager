@@ -78,7 +78,7 @@ module Pod
       defines = Symbols.mangle_for_pod_dependencies(@spec.name, @sandbox_root)
       UI.puts 'Building mangled framework'
       xcodebuild(defines)
-      return defines
+      defines
     end
 
     def compile
@@ -136,7 +136,7 @@ module Pod
       end
     end
 
-    def static_libs_in_sandbox(build_dir='build')
+    def static_libs_in_sandbox(build_dir = 'build')
       Dir.glob("#{@sandbox_root}/#{build_dir}/libPods-*.a")
     end
 
