@@ -11,7 +11,8 @@ module Pod
           ['--force',     'Overwrite existing files.'],
           ['--no-mangle', 'Do not mangle symbols of depedendant Pods.'],
           ['--embedded',  'Generate embedded frameworks.'],
-          ['--library',  'Generate static libraries.']
+          ['--library',   'Generate static libraries.'],
+          ['--subspecs',  'Only include the given subspecs']
         ]
       end
 
@@ -22,6 +23,9 @@ module Pod
         @mangle = argv.flag?('mangle', true)
         @name = argv.shift_argument
         @source = argv.shift_argument
+
+        subspecs = argv.option('subspecs')
+        @subspecs = subspecs.split(',') unless subspecs.nil?
 
         @source_dir = Dir.pwd
         @spec = spec_with_path(@name)

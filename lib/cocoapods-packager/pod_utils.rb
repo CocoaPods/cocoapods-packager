@@ -8,7 +8,8 @@ module Pod
           File.basename(@path),
           @spec.name,
           platform_name,
-          @spec.deployment_target(platform_name))
+          @spec.deployment_target(platform_name),
+          @subspecs)
 
         sandbox = Sandbox.new(config.sandbox_root)
         installer = Installer.new(sandbox, podfile)
@@ -17,13 +18,25 @@ module Pod
         sandbox
       end
 
-      def podfile_from_spec(path, spec_name, platform_name, deployment_target)
+      def podfile_from_spec(path, spec_name, platform_name, deployment_target, subspecs)
         Pod::Podfile.new do
           platform(platform_name, deployment_target)
           if path
-            pod spec_name, :podspec => path
+            if subspecs
+              subspecs.each do |subspec|
+                pod spec_name + '/' + subspec, :podspec => path
+              end
+            else
+              pod spec_name, :podspec => path
+            end
           else
-            pod spec_name, :path => '.'
+            if subspecs
+              subspecs.each do |subspec|
+                pod spec_name + '/' + subspec, :path => '.'
+              end
+            else
+              pod spec_name, :path => '.'
+            end
           end
         end
       end
