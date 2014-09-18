@@ -9,7 +9,7 @@ GIT
 PATH
   remote: .
   specs:
-    cocoapods-packager (1.0.0)
+    cocoapods-packager (1.0.1)
 
 GEM
   remote: https://rubygems.org/
