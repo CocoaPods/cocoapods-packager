@@ -5,6 +5,7 @@ module Pod
     after do
         Dir.glob("CPDColors-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("layer-client-messaging-schema-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("OpenSans-*").each { |dir| Pathname.new(dir).rmtree }
       end
 
     it 'presents the help if a directory is provided' do
@@ -38,6 +39,14 @@ module Pod
       command.run
 
       true.should == true  # To make the test pass without any shoulds
+    end
+
+    it 'can package a podspec with resource bundles' do
+      command = Command.parse(%w{ package spec/fixtures/OpenSans.podspec })
+      command.run
+
+      bundles = Dir.glob('OpenSans-*/ios/OpenSans.framework/Versions/A/Resources/*.bundle')
+      bundles.count.should == 1
     end
   end
 end

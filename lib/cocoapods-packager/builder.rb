@@ -105,14 +105,18 @@ module Pod
     end
 
     def copy_resources(platform)
+      bundles = Dir.glob("#{@sandbox_root}/build/*.bundle")
       `cp -rp #{@sandbox_root}/build/*.bundle #{@fwk.resources_path} 2>&1`
 
       resources = expand_paths(@spec.consumer(platform).resources)
-      if resources.count == 0
+      if resources.count == 0 && bundles.count == 0
         @fwk.delete_resources
         return
       end
-      `cp -rp #{resources.join(' ')} #{@fwk.resources_path}`
+
+      if resources.count > 0
+        `cp -rp #{resources.join(' ')} #{@fwk.resources_path}`
+      end
     end
 
     def create_framework(platform)
