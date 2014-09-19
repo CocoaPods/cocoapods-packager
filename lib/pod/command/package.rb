@@ -4,7 +4,10 @@ module Pod
   class Command
     class Package < Command
       self.summary = 'Package a podspec into a static library.'
-      self.arguments = [['NAME', :required], ['SOURCE']]
+      self.arguments = [
+        CLAide::Argument.new('NAME', true),
+        CLAide::Argument.new('SOURCE', false),
+      ]
 
       def self.options
         [
@@ -12,7 +15,9 @@ module Pod
           ['--no-mangle', 'Do not mangle symbols of depedendant Pods.'],
           ['--embedded',  'Generate embedded frameworks.'],
           ['--library',   'Generate static libraries.'],
-          ['--subspecs',  'Only include the given subspecs']
+          ['--subspecs',  'Only include the given subspecs'],
+          ['--spec-sources=private,master', 'The sources to pull dependant ' \
+            'pods from (defaults to master)'],
         ]
       end
 
@@ -23,6 +28,7 @@ module Pod
         @mangle = argv.flag?('mangle', true)
         @name = argv.shift_argument
         @source = argv.shift_argument
+        @spec_sources = argv.option('spec-sources', 'master').split(',')
 
         subspecs = argv.option('subspecs')
         @subspecs = subspecs.split(',') unless subspecs.nil?
