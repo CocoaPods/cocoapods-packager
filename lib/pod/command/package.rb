@@ -4,8 +4,7 @@ module Pod
   class Command
     class Package < Command
       self.summary = 'Package a podspec into a static library.'
-      self.arguments = [CLAide::Argument.new('NAME', true),
-        CLAide::Argument.new('SOURCE', false)]
+      self.arguments = [['NAME', :required], ['SOURCE']]
 
       def self.options
         [
