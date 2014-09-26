@@ -41,6 +41,18 @@ module Pod
                               BBUNikePlusTag }
       end
 
+      it "mangles symbols if the Pod has dependencies regardless of name" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/a.podspec })
+        command.run
+
+        lib = Dir.glob("a-*/ios/a.framework/a").first
+        symbols = Symbols.symbols_from_library(lib).uniq.sort.reject { |e| e =~ /Poda/ }
+        symbols.should == %w{ BBUNikePlusActivity BBUNikePlusSessionManager 
+                                BBUNikePlusTag }
+      end
+
       it "does not mangle symbols if option --no-mangle is specified" do
         SourcesManager.stubs(:search).returns(nil)
 
