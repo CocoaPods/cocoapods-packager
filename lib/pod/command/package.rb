@@ -16,8 +16,8 @@ module Pod
           ['--embedded',  'Generate embedded frameworks.'],
           ['--library',   'Generate static libraries.'],
           ['--subspecs',  'Only include the given subspecs'],
-          ['--spec-sources=private,master', 'The sources to pull dependant ' \
-            'pods from (defaults to master)'],
+          ['--spec-sources=private,https://github.com/CocoaPods/Specs.git', 'The sources to pull dependant ' \
+            'pods from (defaults to https://github.com/CocoaPods/Specs.git)'],
         ]
       end
 
@@ -28,7 +28,7 @@ module Pod
         @mangle = argv.flag?('mangle', true)
         @name = argv.shift_argument
         @source = argv.shift_argument
-        @spec_sources = argv.option('spec-sources', 'master').split(',')
+        @spec_sources = argv.option('spec-sources', 'https://github.com/CocoaPods/Specs.git').split(',')
 
         subspecs = argv.option('subspecs')
         @subspecs = subspecs.split(',') unless subspecs.nil?
