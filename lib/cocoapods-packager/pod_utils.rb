@@ -9,7 +9,9 @@ module Pod
           @spec.name,
           platform_name,
           @spec.deployment_target(platform_name),
-          @subspecs)
+          @subspecs,
+          @spec_sources,
+        )
 
         sandbox = Sandbox.new(config.sandbox_root)
         installer = Installer.new(sandbox, podfile)
@@ -18,8 +20,9 @@ module Pod
         sandbox
       end
 
-      def podfile_from_spec(path, spec_name, platform_name, deployment_target, subspecs)
+      def podfile_from_spec(path, spec_name, platform_name, deployment_target, subspecs, sources)
         Pod::Podfile.new do
+          sources.each { |s| source s }
           platform(platform_name, deployment_target)
           if path
             if subspecs
