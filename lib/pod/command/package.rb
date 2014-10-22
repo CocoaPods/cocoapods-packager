@@ -54,7 +54,7 @@ module Pod
         target_dir, work_dir = create_working_directory
         return if target_dir.nil?
         build_package
-        `mv #{work_dir} #{target_dir}`
+        `mv "#{work_dir}" "#{target_dir}"`
         Dir.chdir(@source_dir)
       end
 
