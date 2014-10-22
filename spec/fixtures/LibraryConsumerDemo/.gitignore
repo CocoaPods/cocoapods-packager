@@ -1,0 +1,22 @@
+## CocoaPods
+
+Pods
+Podfile.lock
+LibraryConsumer.xcworkspace
+
+## Node
+
+node_modules
+
+## OS X
+
+.DS_Store
+
+## Other
+
+.pt
+
+## Xcode
+
+*.xccheckout
+xcuserdata

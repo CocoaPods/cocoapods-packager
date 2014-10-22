@@ -5,7 +5,8 @@ module Pod
     describe 'IntegrationTests' do
       after do
         Dir.glob("NikeKit-*").each { |dir| Pathname.new(dir).rmtree }
-        Pathname.new('spec/fixtures/PackagerTest/NikeKit.framework').rmtree
+        Dir.glob("LibraryDemo-*").each { |dir| Pathname.new(dir).rmtree }
+        FileUtils.rm_rf('spec/fixtures/PackagerTest/NikeKit.framework')
       end
 
   	 it 'Allow integration into project alongside CocoaPods' do
@@ -16,12 +17,26 @@ module Pod
         `cp -Rp NikeKit-*/ios/NikeKit.framework spec/fixtures/PackagerTest`
 
         Dir.chdir('spec/fixtures/PackagerTest') do
-          `pod install`
-          `xcodebuild -workspace PackagerTest.xcworkspace -scheme PackagerTest`
+          `pod install 2>&1`
+          `xcodebuild -workspace PackagerTest.xcworkspace -scheme PackagerTest 2>&1`
         end
 
-        true.should == true  # To make the test pass without any shoulds
+        $?.exitstatus.should == 0
   	 end
+
+     it 'allows integration of a library without dependencies' do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/LibraryDemo.podspec })
+        command.run
+
+        Dir.chdir('spec/fixtures/LibraryConsumerDemo') do
+          `pod install 2>&1`
+          `xcodebuild -workspace LibraryConsumer.xcworkspace -scheme LibraryConsumer 2>&1`
+        end
+
+        $?.exitstatus.should == 0
+     end 
     end
   end
 end

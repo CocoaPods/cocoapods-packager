@@ -82,7 +82,7 @@ module Pod
     end
 
     def compile
-      xcodebuild
+      xcodebuild("GCC_PREPROCESSOR_DEFINITIONS='PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{@spec.name}'")
 
       if dependency_count > 0 && @mangle
         return build_with_mangling
