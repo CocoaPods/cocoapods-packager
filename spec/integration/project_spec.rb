@@ -33,6 +33,7 @@ module Pod
         Dir.chdir('spec/fixtures/LibraryConsumerDemo') do
           `pod install 2>&1`
           `xcodebuild -workspace LibraryConsumer.xcworkspace -scheme LibraryConsumer 2>&1`
+          `xcodebuild -sdk iphonesimulator -workspace LibraryConsumer.xcworkspace -scheme LibraryConsumer 2>&1`
         end
 
         $?.exitstatus.should == 0
