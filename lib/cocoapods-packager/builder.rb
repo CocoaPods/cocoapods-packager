@@ -82,13 +82,14 @@ module Pod
     end
 
     def compile
-      xcodebuild("GCC_PREPROCESSOR_DEFINITIONS='PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{@spec.name}'")
+      defines = "GCC_PREPROCESSOR_DEFINITIONS='PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{@spec.name}'"
+      xcodebuild(defines)
 
       if dependency_count > 0 && @mangle
         return build_with_mangling
       end
 
-      ''
+      defines
     end
 
     def copy_headers
