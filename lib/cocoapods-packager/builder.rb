@@ -97,6 +97,20 @@ module Pod
 
       Dir.glob("#{headers_source_root}/**/*.h").
         each { |h| `ditto #{h} #{@fwk.headers_path}/#{h.sub(headers_source_root, '')}` }
+
+      if File.exist?("#{@public_headers_root}/#{@spec.name}/#{@spec.name}.h")
+        module_map = <<MAP
+framework module #{@spec.name} {
+  umbrella header "#{@spec.name}.h"
+
+  export *
+  module * { export * }
+}
+MAP
+
+        @fwk.module_map_path.mkpath unless @fwk.module_map_path.exist?
+        File.write("#{@fwk.module_map_path}/module.modulemap", module_map)
+      end
     end
 
     def copy_license

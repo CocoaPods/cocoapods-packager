@@ -1,6 +1,7 @@
 module Framework
   class Tree
     attr_reader :headers_path
+    attr_reader :module_map_path
     attr_reader :resources_path
     attr_reader :root_path
     attr_reader :versions_path
@@ -38,6 +39,7 @@ module Framework
       @fwk_path = @root_path + Pathname.new(@name + '.framework')
       @fwk_path.mkdir unless @fwk_path.exist?
 
+      @module_map_path = @fwk_path + Pathname.new('Modules')
       @versions_path = @fwk_path + Pathname.new('Versions/A')
     end
 
