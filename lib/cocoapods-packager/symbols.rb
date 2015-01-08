@@ -1,6 +1,6 @@
 module Symbols
   def symbols_from_library(library)
-    syms = `nm -g #{library}`.split("\n")
+    syms = `nm -gU #{library}`.split("\n")
 
     result = classes_from_symbols(syms)
     result + constants_from_symbols(syms)
@@ -12,7 +12,6 @@ module Symbols
 
   def classes_from_symbols(syms)
     classes = syms.select { |klass| klass[/OBJC_CLASS_\$_/] }
-    classes = classes.select { |klass| klass !~ /_NS|_UI/ }
     classes = classes.uniq
     classes.map! { |klass| klass.gsub(/^.*\$_/, '') }
   end
