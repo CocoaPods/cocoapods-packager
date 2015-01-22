@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'KFData'
-  s.version = '1.0.1'
+  s.version = '1.0.5'
   s.license = 'BSD'
   s.summary = 'Lightweight Core Data wrapper.'
   s.homepage = 'https://github.com/kylef/KFData'
@@ -17,8 +17,15 @@ Pod::Spec.new do |s|
   s.header_dir = 'KFData'
 
   s.subspec 'Attribute' do |attribute_spec|
+    attribute_spec.dependency 'QueryKit', '~> 0.8.3'
     attribute_spec.ios.source_files = 'KFData/Attribute/*.{h,m}'
     attribute_spec.osx.source_files = 'KFData/Attribute/*.{h,m}'
+  end
+
+  s.subspec 'Manager' do |manager_spec|
+    manager_spec.dependency 'QueryKit', '~> 0.8.3'
+    manager_spec.ios.source_files = 'KFData/Manager/*.{h,m}'
+    manager_spec.osx.source_files = 'KFData/Manager/*.{h,m}'
   end
 
   s.subspec 'Core' do |corespec|
@@ -42,7 +49,7 @@ Pod::Spec.new do |s|
   end
 
   s.subspec 'UI' do |uispec|
-    uispec.dependency 'KFData/Essentials'
+    uispec.dependency 'KFData/Manager'
     uispec.platform = :ios
     uispec.ios.frameworks = 'UIKit'
     uispec.ios.source_files = 'KFData/UI/*.{h,m}'
@@ -52,11 +59,13 @@ Pod::Spec.new do |s|
    essentialsspec.dependency 'KFData/Core'
    essentialsspec.dependency 'KFData/Store'
    essentialsspec.dependency 'KFData/Attribute'
+   essentialsspec.dependency 'KFData/Manager'
    essentialsspec.ios.dependency 'KFData/UI'
   end
 
   s.subspec 'Compatibility' do |cspec|
     cspec.dependency 'KFData/Core'
+    cspec.dependency 'KFData/Manager'
     cspec.header_dir = 'KFData/Compatibility'
     cspec.source_files = 'KFData/Compatibility/*.{h,m}'
   end
