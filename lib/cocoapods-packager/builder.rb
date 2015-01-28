@@ -160,7 +160,7 @@ MAP
     end
 
     def xcodebuild(defines = '', args = '', build_dir = 'build')
-      `xcodebuild #{defines} CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -configuration Release -target Pods -project #{@sandbox_root}/Pods.xcodeproj 2>&1`
+      `xcodebuild #{defines} ARCHS="x86_64 i386 arm64 armv7 armv7s" CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -configuration Release -target Pods -project #{@sandbox_root}/Pods.xcodeproj 2>&1`
     end
   end
 end
