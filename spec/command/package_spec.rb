@@ -65,6 +65,17 @@ module Pod
         symbols.should == []
       end
 
+      it "includes the correct architectures when packaging an iOS Pod" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
+        command.run
+
+        lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
+        `lipo #{lib} -verify_arch armv7 arm64`
+        $?.success?.should == true
+      end
+
       it "does not fail when the pod name contains a dash" do
         SourcesManager.stubs(:search).returns(nil)
 
