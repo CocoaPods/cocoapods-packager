@@ -62,7 +62,7 @@ module Pod
     def build_static_lib_for_ios(static_libs, defines, output)
       `libtool -static -o #{@sandbox_root}/build/package.a #{static_libs.join(' ')}`
 
-      xcodebuild(defines, '-sdk iphonesimulator', 'build-sim')
+      xcodebuild("#{defines} ARCHS=\"x86_64 i386 arm64 armv7 armv7s\"", '-sdk iphonesimulator', 'build-sim')
       sim_libs = static_libs_in_sandbox('build-sim')
       `libtool -static -o #{@sandbox_root}/build-sim/package.a #{sim_libs.join(' ')}`
 
@@ -160,7 +160,7 @@ MAP
     end
 
     def xcodebuild(defines = '', args = '', build_dir = 'build')
-      `xcodebuild #{defines} ARCHS="x86_64 i386 arm64 armv7 armv7s" CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -configuration Release -target Pods -project #{@sandbox_root}/Pods.xcodeproj 2>&1`
+      `xcodebuild #{defines} CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -configuration Release -target Pods -project #{@sandbox_root}/Pods.xcodeproj 2>&1`
     end
   end
 end
