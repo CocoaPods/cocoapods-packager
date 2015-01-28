@@ -16,11 +16,14 @@ module Pod
         command.run
         `cp -Rp NikeKit-*/ios/NikeKit.framework spec/fixtures/PackagerTest`
 
+        log = ''
+
         Dir.chdir('spec/fixtures/PackagerTest') do
           `pod install 2>&1`
-          `xcodebuild -workspace PackagerTest.xcworkspace -scheme PackagerTest 2>&1`
+          log << `xcodebuild -workspace PackagerTest.xcworkspace -scheme PackagerTest -sdk iphonesimulator CODE_SIGN_IDENTITY=- 2>&1`
         end
 
+        puts log if $?.exitstatus != 0
         $?.exitstatus.should == 0
   	 end
 
@@ -30,12 +33,15 @@ module Pod
         command = Command.parse(%w{ package spec/fixtures/LibraryDemo.podspec })
         command.run
 
+        log = ''
+
         Dir.chdir('spec/fixtures/LibraryConsumerDemo') do
           `pod install 2>&1`
-          `xcodebuild -workspace LibraryConsumer.xcworkspace -scheme LibraryConsumer 2>&1`
-          `xcodebuild -sdk iphonesimulator -workspace LibraryConsumer.xcworkspace -scheme LibraryConsumer 2>&1`
+          log << `xcodebuild -workspace LibraryConsumer.xcworkspace -scheme LibraryConsumer 2>&1`
+          log << `xcodebuild -sdk iphonesimulator -workspace LibraryConsumer.xcworkspace -scheme LibraryConsumer 2>&1`
         end
 
+        puts log if $?.exitstatus != 0
         $?.exitstatus.should == 0
      end 
     end

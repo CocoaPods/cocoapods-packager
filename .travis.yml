@@ -1,4 +1,6 @@
 language: objective-c
 cache: bundler
-before_install: bundle install
+before_install:
+- bundle install
+- bundle exec pod repo update --silent
 script: bundle exec rake specs
