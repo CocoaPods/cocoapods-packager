@@ -20,7 +20,7 @@ module Pod
     def build_static_library(platform)
       UI.puts('Building static library')
 
-      defines = compile
+      defines = compile(platform)
       platform_path = Pathname.new(platform.name.to_s)
       platform_path.mkdir unless platform_path.exist?
       build_library(platform, defines, platform_path + Pathname.new("lib#{@spec.name}.a"))
@@ -29,7 +29,7 @@ module Pod
     def build_framework(platform)
       UI.puts('Building framework')
 
-      defines = compile
+      defines = compile(platform)
       create_framework(platform.name.to_s)
       copy_headers
       build_library(platform, defines, @fwk.versions_path + Pathname.new(@spec.name))
@@ -62,7 +62,7 @@ module Pod
     def build_static_lib_for_ios(static_libs, defines, output)
       `libtool -static -o #{@sandbox_root}/build/package.a #{static_libs.join(' ')}`
 
-      xcodebuild("#{defines} ARCHS=\"x86_64 i386 arm64 armv7 armv7s\"", '-sdk iphonesimulator', 'build-sim')
+      xcodebuild(defines, '-sdk iphonesimulator', 'build-sim')
       sim_libs = static_libs_in_sandbox('build-sim')
       `libtool -static -o #{@sandbox_root}/build-sim/package.a #{sim_libs.join(' ')}`
 
@@ -73,20 +73,29 @@ module Pod
       `libtool -static -o #{output} #{static_libs.join(' ')}`
     end
 
-    def build_with_mangling
+    def build_with_mangling(platform)
       UI.puts 'Mangling symbols'
       defines = Symbols.mangle_for_pod_dependencies(@spec.name, @sandbox_root)
+      if platform.name == :ios
+        defines = "#{defines} ARCHS=\"x86_64 i386 arm64 armv7 armv7s\""
+      end
+
       UI.puts 'Building mangled framework'
       xcodebuild(defines)
       defines
     end
 
-    def compile
+    def compile(platform)
       defines = "GCC_PREPROCESSOR_DEFINITIONS='PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{@spec.name}'"
+
+      if platform.name == :ios
+        defines = "#{defines} ARCHS=\"x86_64 i386 arm64 armv7 armv7s\""
+      end
+
       xcodebuild(defines)
 
       if dependency_count > 0 && @mangle
-        return build_with_mangling
+        return build_with_mangling(platform)
       end
 
       defines
