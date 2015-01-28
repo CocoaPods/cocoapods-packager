@@ -20,7 +20,7 @@ module Pod
 
         Dir.chdir('spec/fixtures/PackagerTest') do
           `pod install 2>&1`
-          log << `xcodebuild -workspace PackagerTest.xcworkspace -scheme PackagerTest 2>&1`
+          log << `xcodebuild -workspace PackagerTest.xcworkspace -scheme PackagerTest -sdk iphonesimulator CODE_SIGN_IDENTITY=- 2>&1`
         end
 
         puts log if $?.exitstatus != 0
