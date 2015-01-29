@@ -5,7 +5,7 @@ module Pod
 
       def install_pod(platform_name)
         podfile = podfile_from_spec(
-          File.basename(@path),
+          @path && File.expand_path(@path),
           @spec.name,
           platform_name,
           @spec.deployment_target(platform_name),
@@ -27,18 +27,18 @@ module Pod
           if path
             if subspecs
               subspecs.each do |subspec|
-                pod spec_name + '/' + subspec, :podspec => path
+                pod spec_name + '/' + subspec, :path => File.dirname(path)
               end
             else
-              pod spec_name, :podspec => path
+              pod spec_name, :path => File.dirname(path)
             end
           else
             if subspecs
               subspecs.each do |subspec|
-                pod spec_name + '/' + subspec, :path => '.'
+                pod spec_name + '/' + subspec
               end
             else
-              pod spec_name, :path => '.'
+              pod spec_name
             end
           end
         end
