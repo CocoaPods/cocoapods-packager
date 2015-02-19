@@ -6,6 +6,7 @@ module Pod
         Dir.glob("CPDColors-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("layer-client-messaging-schema-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("OpenSans-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("Weakly-*").each { |dir| Pathname.new(dir).rmtree }
       end
 
     it 'presents the help if a directory is provided' do
@@ -47,6 +48,13 @@ module Pod
 
       bundles = Dir.glob('OpenSans-*/ios/OpenSans.framework/Versions/A/Resources/*.bundle')
       bundles.count.should == 1
+    end
+
+    it 'can package a podspec with weak frameworks without strong linking' do
+      command = Command.parse(%w{ package spec/fixtures/Weakly.podspec })
+      command.run
+
+      `otool -l Weakly-*/ios/Weakly.framework/Weakly`.should.not.match /AssetsLibrary/
     end
   end
 end

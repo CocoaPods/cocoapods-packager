@@ -17,6 +17,13 @@ module Pod
         installer = Installer.new(sandbox, podfile)
         installer.install!
 
+        installer.pods_project.targets.each do |target|
+          target.build_configurations.each do |config|
+            config.build_settings['CLANG_MODULES_AUTOLINK'] = 'NO'
+          end
+        end
+        installer.pods_project.save
+
         sandbox
       end
 
