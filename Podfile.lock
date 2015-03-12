@@ -1,0 +1,14 @@
+PODS:
+  - LibraryDemo (1.0.0)
+
+DEPENDENCIES:
+  - LibraryDemo (from `LibraryDemo.podspec`)
+
+EXTERNAL SOURCES:
+  LibraryDemo:
+    :podspec: LibraryDemo.podspec
+
+SPEC CHECKSUMS:
+  LibraryDemo: 45c4165cee78755e6ac7952f1af2a3d85a6c5fc3
+
+COCOAPODS: 0.36.0
