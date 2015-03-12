@@ -60,6 +60,7 @@ module Pod
     end
 
     def build_static_lib_for_ios(static_libs, defines, output)
+      return if static_libs.count == 0
       `libtool -static -o #{@sandbox_root}/build/package.a #{static_libs.join(' ')}`
 
       xcodebuild(defines, '-sdk iphonesimulator', 'build-sim')
@@ -70,6 +71,7 @@ module Pod
     end
 
     def build_static_lib_for_mac(static_libs, output)
+      return if static_libs.count == 0
       `libtool -static -o #{output} #{static_libs.join(' ')}`
     end
 
