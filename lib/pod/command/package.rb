@@ -74,7 +74,7 @@ module Pod
           puts "Build command failed: #{ex.command}"
           puts "Output:"
           ex.output.each { |line| puts "    #{line}" }
-          raise ex
+          Process.exit
 
         ensure
           Pathname.new(config.sandbox_root).rmtree
