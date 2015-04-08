@@ -78,7 +78,8 @@ module Pod
     def build_with_mangling(platform)
       UI.puts 'Mangling symbols'
       defines = Symbols.mangle_for_pod_dependencies(@spec.name, @sandbox_root)
-      defines += @spec.consumer(platform).compiler_flags.join(' ')
+      defines << " " << @spec.consumer(platform).compiler_flags.join(' ')
+
       if platform.name == :ios
         defines = "#{defines} ARCHS=\"x86_64 i386 arm64 armv7 armv7s\""
       end
@@ -90,7 +91,7 @@ module Pod
 
     def compile(platform)
       defines = "GCC_PREPROCESSOR_DEFINITIONS='PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{@spec.name}'"
-      defines += " #{@spec.consumer(platform).compiler_flags.join(' ')}"
+      defines << " " << @spec.consumer(platform).compiler_flags.join(' ')
 
       if platform.name == :ios
         defines = "#{defines} ARCHS=\"x86_64 i386 arm64 armv7 armv7s\""
