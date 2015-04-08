@@ -185,11 +185,10 @@ MAP
 
     def xcodebuild(defines = '', args = '', build_dir = 'build')
       command = "xcodebuild #{defines} CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -configuration Release -target Pods -project #{@sandbox_root}/Pods.xcodeproj 2>&1"
-      log = []
-      `#{command}`.lines.each { |line| log << line }
+      output = `#{command}`.lines.to_a
 
       if $?.exitstatus != 0
-        raise BuildFailedException.new(command, log)
+        raise BuildFailedException.new(command, output)
       end
     end
   end
