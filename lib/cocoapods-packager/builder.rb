@@ -1,5 +1,15 @@
 module Pod
   class Builder
+    class BuildFailedException < RuntimeError
+      attr_accessor :command, :output
+
+      def initialize(command, output)
+        @command = command
+        @output = output
+      end
+    end
+
+
     def initialize(source_dir, sandbox_root, public_headers_root, spec, embedded, mangle)
       @source_dir = source_dir
       @sandbox_root = sandbox_root
@@ -174,7 +184,13 @@ MAP
     end
 
     def xcodebuild(defines = '', args = '', build_dir = 'build')
-      `xcodebuild #{defines} CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -configuration Release -target Pods -project #{@sandbox_root}/Pods.xcodeproj 2>&1`
+      command = "xcodebuild #{defines} CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -configuration Release -target Pods -project #{@sandbox_root}/Pods.xcodeproj 2>&1"
+      log = []
+      `#{command}`.lines.each { |line| log << line }
+
+      if $?.exitstatus != 0
+        raise BuildFailedException.new(command, log)
+      end
     end
   end
 end
