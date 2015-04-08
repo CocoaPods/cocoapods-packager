@@ -21,36 +21,36 @@ module Pod
       return Specification.from_string(spec_string, 'Builder.podspec')
     end
 
-  	describe 'Preserve attributes from source specification' do
+    describe 'Preserve attributes from source specification' do
       before do
         @spec = Specification.from_file('spec/fixtures/Builder.podspec')
         @builder = SpecBuilder.new(@spec, nil, false)
       end
 
-  		it "preserves platform.frameworks" do
-  			spec = specification_from_builder(@builder)
+      it "preserves platform.frameworks" do
+        spec = specification_from_builder(@builder)
         compare_attributes(spec, @spec, 'frameworks')
-  		end
+      end
 
-  		it "preserves platform.libraries" do
-  			spec = specification_from_builder(@builder)
+      it "preserves platform.libraries" do
+        spec = specification_from_builder(@builder)
         compare_attributes(spec, @spec, 'libraries')
-  		end
+      end
 
-  		it "preserves platform.requires_arc" do
-  			spec = specification_from_builder(@builder)
+      it "preserves platform.requires_arc" do
+        spec = specification_from_builder(@builder)
         compare_attributes(spec, @spec, 'requires_arc')
-  		end
+      end
 
-  		it "preserves platform.deployment_target" do
-  			spec = specification_from_builder(@builder)
+      it "preserves platform.deployment_target" do
+        spec = specification_from_builder(@builder)
         compare_attributes(spec, @spec, 'deployment_target')
-  		end
+      end
 
-  		it "preserves platform.xcconfig" do
-  			spec = specification_from_builder(@builder)
+      it "preserves platform.xcconfig" do
+        spec = specification_from_builder(@builder)
         compare_attributes(spec, @spec, 'xcconfig')
-  		end
-  	end
+      end
+    end
   end
 end
