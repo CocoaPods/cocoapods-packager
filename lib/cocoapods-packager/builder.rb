@@ -1,14 +1,5 @@
 module Pod
   class Builder
-    class BuildFailedException < RuntimeError
-      attr_accessor :command, :output
-
-      def initialize(command, output)
-        @command = command
-        @output = output
-      end
-    end
-
 
     def initialize(source_dir, sandbox_root, public_headers_root, spec, embedded, mangle)
       @source_dir = source_dir
