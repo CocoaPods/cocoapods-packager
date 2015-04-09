@@ -4,7 +4,7 @@ module Pod
       class << self
         def report(command, output)
           <<-EOF
-Build command failed: #{command}"
+Build command failed: #{command}
 Output:
 #{output.map { |line| "    #{line}" }.join}
           EOF
