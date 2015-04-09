@@ -178,9 +178,7 @@ MAP
       output = `#{command}`.lines.to_a
 
       if $?.exitstatus != 0
-        puts "Build command failed: #{command}"
-        puts "Output:"
-        output.each { |line| puts "    #{line}" }
+        puts UI::BuildFailedReport.report(command, output)
 
         # Note: We use `Process.exit` here because it fires a `SystemExit`
         # exception, which gives the caller a chance to clean up before the
