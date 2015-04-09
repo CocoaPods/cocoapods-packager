@@ -70,12 +70,6 @@ module Pod
         begin
           perform_build(platform, sandbox)
 
-        rescue Pod::Builder::BuildFailedException => ex
-          puts "Build command failed: #{ex.command}"
-          puts "Output:"
-          ex.output.each { |line| puts "    #{line}" }
-          Process.exit
-
         ensure
           Pathname.new(config.sandbox_root).rmtree
           FileUtils.rm_f('Podfile.lock')

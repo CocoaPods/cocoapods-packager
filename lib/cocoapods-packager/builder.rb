@@ -188,7 +188,10 @@ MAP
       output = `#{command}`.lines.to_a
 
       if $?.exitstatus != 0
-        raise BuildFailedException.new(command, output)
+        puts "Build command failed: #{command}"
+        puts "Output:"
+        output.each { |line| puts "    #{line}" }
+        Process.exit
       end
     end
   end
