@@ -1,4 +1,5 @@
 require 'pod/command/package'
+require 'cocoapods-packager/user_interface/build_failed_report'
 require 'cocoapods-packager/builder'
 require 'cocoapods-packager/framework'
 require 'cocoapods-packager/mangle'

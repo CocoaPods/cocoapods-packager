@@ -174,7 +174,19 @@ MAP
     end
 
     def xcodebuild(defines = '', args = '', build_dir = 'build')
-      `xcodebuild #{defines} CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -configuration Release -target Pods -project #{@sandbox_root}/Pods.xcodeproj 2>&1`
+      command = "xcodebuild #{defines} CONFIGURATION_BUILD_DIR=#{build_dir} clean build #{args} -configuration Release -target Pods -project #{@sandbox_root}/Pods.xcodeproj 2>&1"
+      output = `#{command}`.lines.to_a
+
+      if $?.exitstatus != 0
+        puts UI::BuildFailedReport.report(command, output)
+
+        # Note: We use `Process.exit` here because it fires a `SystemExit`
+        # exception, which gives the caller a chance to clean up before the
+        # process terminates.
+        #
+        # See http://ruby-doc.org/core-1.9.3/Process.html#method-c-exit
+        Process.exit
+      end
     end
   end
 end

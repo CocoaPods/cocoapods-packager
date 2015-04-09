@@ -67,10 +67,13 @@ module Pod
 
         sandbox = install_pod(platform.name)
 
-        perform_build(platform, sandbox)
+        begin
+          perform_build(platform, sandbox)
 
-        Pathname.new(config.sandbox_root).rmtree
-        FileUtils.rm_f('Podfile.lock')
+        ensure # in case the build fails; see Builder#xcodebuild.
+          Pathname.new(config.sandbox_root).rmtree
+          FileUtils.rm_f('Podfile.lock')
+        end
       end
 
       def build_package
