@@ -1,6 +1,5 @@
 module Pod
   class Builder
-
     def initialize(source_dir, sandbox_root, public_headers_root, spec, embedded, mangle)
       @source_dir = source_dir
       @sandbox_root = sandbox_root
