@@ -70,7 +70,7 @@ module Pod
         begin
           perform_build(platform, sandbox)
 
-        ensure
+        ensure # in case the build fails; see Builder#xcodebuild.
           Pathname.new(config.sandbox_root).rmtree
           FileUtils.rm_f('Podfile.lock')
         end

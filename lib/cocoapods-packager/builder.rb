@@ -181,6 +181,12 @@ MAP
         puts "Build command failed: #{command}"
         puts "Output:"
         output.each { |line| puts "    #{line}" }
+
+        # Note: We use `Process.exit` here because it fires a `SystemExit`
+        # exception, which gives the caller a chance to clean up before the
+        # process terminates.
+        #
+        # See http://ruby-doc.org/core-1.9.3/Process.html#method-c-exit
         Process.exit
       end
     end
