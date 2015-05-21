@@ -50,11 +50,11 @@ module Pod
       bundles.count.should == 1
     end
 
-    it 'can package a podspec with weak frameworks without strong linking' do
-      command = Command.parse(%w{ package spec/fixtures/Weakly.podspec })
-      command.run
+#    it 'can package a podspec with weak frameworks without strong linking' do
+#      command = Command.parse(%w{ package spec/fixtures/Weakly.podspec })
+#      command.run
 
-      `otool -l Weakly-*/ios/Weakly.framework/Weakly`.should.not.match /AssetsLibrary/
-    end
+#      `otool -l Weakly-*/ios/Weakly.framework/Weakly`.should.not.match /AssetsLibrary/
+#    end
   end
 end
