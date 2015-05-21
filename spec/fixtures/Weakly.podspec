@@ -8,6 +8,6 @@ Pod::Spec.new do |s|
   s.platform     = :ios, '8.0'
   s.source       = { :git => "https://github.com/neonichu/CPDColors.git", :tag => s.version }
   s.source_files = 'Code'
-  
-  s.dependency 'PromiseKit'
+
+#  s.dependency 'PromiseKit'
 end
