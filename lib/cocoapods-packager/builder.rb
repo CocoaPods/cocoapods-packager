@@ -112,10 +112,9 @@ module Pod
       Dir.glob("#{headers_source_root}/**/*.h").
           each { |h| `ditto #{h} #{@fwk.headers_path}/#{h.sub(headers_source_root, '')}` }
 
-      # if custom 'module_map' is specified add it
-      # to the framework distribution, otherwise check
-      # if a header exists that is equal to 'spec.name'', if so
-      # create a default 'module-map' one using it.
+      # If custom 'module_map' is specified add it to the framework distribution
+      # otherwise check if a header exists that is equal to 'spec.name', if so
+      # create a default 'module_map' one using it.
       if !@spec.module_map.nil?
         module_map_file = "#{@sandbox_root}/#{@spec.name}/#{@spec.module_map}"
         module_map = File.read(module_map_file) if Pathname(module_map_file).exist?
