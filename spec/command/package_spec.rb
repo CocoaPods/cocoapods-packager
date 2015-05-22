@@ -94,6 +94,24 @@ module Pod
         true.should == true  # To make the test pass without any shoulds
       end
 
+      it "it respects module_map directive" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/FH.podspec })
+        command.run
+
+        modulemap_contents = File.read(Dir.glob("FH-*/ios/FH.framework/Modules/module.modulemap").first)
+        module_map = <<MAP
+framework module FH {
+  umbrella header "FeedHenry.h"
+
+  export *
+  module * { export * }
+}
+MAP
+        modulemap_contents.should == module_map
+      end
+
       #it "runs with a spec in the master repository" do
       #  command = Command.parse(%w{ package KFData })
       #  command.run
