@@ -9,5 +9,5 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/neonichu/CPDColors.git", :tag => s.version }
   s.source_files = 'Code'
 
-#  s.dependency 'PromiseKit'
+  s.dependency 'PromiseKit', '~> 1.5'
 end
