@@ -8,6 +8,7 @@ module Pod
         Dir.glob("NikeKit-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("foo-bar-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("a-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("FH-*").each { |dir| Pathname.new(dir).rmtree }
       end
 
       it 'registers itself' do
