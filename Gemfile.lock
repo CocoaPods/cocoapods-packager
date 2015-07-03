@@ -10,11 +10,12 @@ PATH
   remote: .
   specs:
     cocoapods-packager (1.2.0)
+      cocoapods (>= 0.37.0)
 
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (4.2.1)
+    activesupport (4.2.3)
       i18n (~> 0.7)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
@@ -57,10 +58,10 @@ GEM
     escape (0.0.4)
     fuzzy_match (2.0.4)
     i18n (0.7.0)
-    json (1.8.2)
+    json (1.8.3)
     metaclass (0.0.4)
     mime-types (2.4.3)
-    minitest (5.6.1)
+    minitest (5.7.0)
     mocha (0.11.4)
       metaclass (~> 0.0.1)
     mocha-on-bacon (0.2.1)
@@ -84,7 +85,7 @@ GEM
     tins (0.13.2)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
-    xcodeproj (0.24.1)
+    xcodeproj (0.24.3)
       activesupport (>= 3)
       colored (~> 1.2)
 
@@ -101,3 +102,6 @@ DEPENDENCIES
   mocha-on-bacon
   prettybacon!
   rake
+
+BUNDLED WITH
+   1.10.5
