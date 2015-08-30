@@ -8,7 +8,7 @@ module Symbols
   # 	- put defines into `GCC_PREPROCESSOR_DEFINITIONS` for passing to Xcode
   #
   def mangle_for_pod_dependencies(pod_name, sandbox_root)
-    pod_libs = Dir.glob("#{sandbox_root}/build/libPods-*.a").select do
+    pod_libs = Dir.glob("#{sandbox_root}/build/libPods.a").select do
       |file| file !~ /libPods-#{pod_name}.a$/
     end
 

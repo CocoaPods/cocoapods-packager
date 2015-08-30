@@ -178,7 +178,7 @@ MAP
     end
 
     def static_libs_in_sandbox(build_dir = 'build')
-      Dir.glob("#{@sandbox_root}/#{build_dir}/libPods-*.a")
+      Dir.glob("#{@sandbox_root}/#{build_dir}/libPods.a")
     end
 
     def xcodebuild(defines = '', args = '', build_dir = 'build')
