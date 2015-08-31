@@ -1,5 +1,5 @@
 require 'tmpdir'
-
+require 'byebug'
 module Pod
   class Command
     class Package < Command
@@ -15,6 +15,7 @@ module Pod
           ['--no-mangle', 'Do not mangle symbols of depedendant Pods.'],
           ['--embedded',  'Generate embedded frameworks.'],
           ['--library',   'Generate static libraries.'],
+          ['--dynamic',   'Generate dynamic framework.'],
           ['--subspecs',  'Only include the given subspecs'],
           ['--spec-sources=private,https://github.com/CocoaPods/Specs.git', 'The sources to pull dependant ' \
             'pods from (defaults to https://github.com/CocoaPods/Specs.git)'],
@@ -25,6 +26,7 @@ module Pod
         @embedded = argv.flag?('embedded')
         @force = argv.flag?('force')
         @library = argv.flag?('library')
+        @dynamic = argv.flag?('dynamic')
         @mangle = argv.flag?('mangle', true)
         @name = argv.shift_argument
         @source = argv.shift_argument
@@ -54,6 +56,7 @@ module Pod
         target_dir, work_dir = create_working_directory
         return if target_dir.nil?
         build_package
+
         `mv "#{work_dir}" "#{target_dir}"`
         Dir.chdir(@source_dir)
       end
@@ -65,10 +68,16 @@ module Pod
         config.integrate_targets  = false
         config.skip_repo_update   = true
 
-        sandbox = install_pod(platform.name)
+        static_sandbox = build_static_sandbox(@dynamic)
+        static_installer = install_pod(platform.name, static_sandbox)
+
+        if @dynamic
+          dynamic_sandbox = build_dynamic_sandbox(static_sandbox, static_installer)
+          install_dynamic_pod(dynamic_sandbox, static_sandbox, static_installer)
+        end
 
         begin
-          perform_build(platform, sandbox)
+          perform_build(platform, static_sandbox, dynamic_sandbox)
 
         ensure # in case the build fails; see Builder#xcodebuild.
           Pathname.new(config.sandbox_root).rmtree
@@ -77,7 +86,7 @@ module Pod
       end
 
       def build_package
-        builder = SpecBuilder.new(@spec, @source, @embedded)
+        builder = SpecBuilder.new(@spec, @source, @embedded, @dynamic)
         newspec = builder.spec_metadata
 
         @spec.available_platforms.each do |platform|
@@ -115,14 +124,23 @@ module Pod
         [target_dir, work_dir]
       end
 
-      def perform_build(platform, sandbox)
+      def perform_build(platform, static_sandbox, dynamic_sandbox)
+        static_sandbox_root = "#{config.sandbox_root}"
+
+        if @dynamic
+          static_sandbox_root = "#{static_sandbox_root}/#{static_sandbox.root.to_s.split('/').last}"
+          dynamic_sandbox_root = "#{config.sandbox_root}/#{dynamic_sandbox.root.to_s.split('/').last}"
+        end
+
         builder = Pod::Builder.new(
           @source_dir,
-          config.sandbox_root,
-          sandbox.public_headers.root,
+          static_sandbox_root,
+          dynamic_sandbox_root,
+          static_sandbox.public_headers.root,
           @spec,
           @embedded,
-          @mangle)
+          @mangle,
+          @dynamic)
 
         builder.build(platform, @library)
 

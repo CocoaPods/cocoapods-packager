@@ -5,23 +5,24 @@ module Pod
     it "uses additional spec repos passed on the command line" do
       SourcesManager.stubs(:search).returns(nil)
       nil::NilClass.any_instance.stubs(:install!)
-      Installer.expects(:new).with { 
-          |sandbox, podfile| podfile.sources == ['foo', 'bar'] 
-        }
+      Installer.expects(:new).with {
+        |sandbox, podfile| podfile.sources == ['foo', 'bar']
+      }
 
       command = Command.parse(%w{ package spec/fixtures/KFData.podspec --spec-sources=foo,bar})
-      command.send(:install_pod, :osx)
+      command.send(:install_pod, :osx, nil)
+
     end
 
     it "uses only the master repo if no spec repos were passed" do
       SourcesManager.stubs(:search).returns(nil)
       nil::NilClass.any_instance.stubs(:install!)
-      Installer.expects(:new).with { 
-          |sandbox, podfile| podfile.sources == ['https://github.com/CocoaPods/Specs.git'] 
+      Installer.expects(:new).with {
+          |sandbox, podfile| podfile.sources == ['https://github.com/CocoaPods/Specs.git']
         }
 
       command = Command.parse(%w{ package spec/fixtures/KFData.podspec })
-      command.send(:install_pod, :osx)
+      command.send(:install_pod, :osx, nil)
     end
   end
 end
