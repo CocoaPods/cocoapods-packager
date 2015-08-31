@@ -39,7 +39,7 @@ module Pod
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
         symbols = Symbols.symbols_from_library(lib).uniq.sort.reject { |e| e =~ /PodNikeKit/ }
-        symbols.should == %w{ BBUNikePlusActivity BBUNikePlusSessionManager 
+        symbols.should == %w{ BBUNikePlusActivity BBUNikePlusSessionManager
                               BBUNikePlusTag }
       end
 
@@ -51,7 +51,7 @@ module Pod
 
         lib = Dir.glob("a-*/ios/a.framework/a").first
         symbols = Symbols.symbols_from_library(lib).uniq.sort.reject { |e| e =~ /Poda/ }
-        symbols.should == %w{ BBUNikePlusActivity BBUNikePlusSessionManager 
+        symbols.should == %w{ BBUNikePlusActivity BBUNikePlusSessionManager
                                 BBUNikePlusTag }
       end
 
