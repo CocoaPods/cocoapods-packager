@@ -99,7 +99,7 @@ module Pod
 
       xcodebuild(defines)
 
-      if dependency_count > 0 && @mangle
+      if @mangle
         return build_with_mangling(platform)
       end
 
@@ -178,7 +178,7 @@ MAP
     end
 
     def static_libs_in_sandbox(build_dir = 'build')
-      Dir.glob("#{@sandbox_root}/#{build_dir}/libPods-*.a")
+      Dir.glob("#{@sandbox_root}/#{build_dir}/lib*.a")
     end
 
     def xcodebuild(defines = '', args = '', build_dir = 'build')
