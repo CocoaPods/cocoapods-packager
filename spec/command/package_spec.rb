@@ -73,8 +73,37 @@ module Pod
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
-        `lipo #{lib} -verify_arch armv7 armv7s arm64`
+        `lipo #{lib} -verify_arch x86_64 i386 armv7 armv7s arm64`
         $?.success?.should == true
+      end
+
+      it "includes Bitcode for device arch slices when packaging an iOS Pod" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
+        command.run
+
+        lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
+
+        #Check for __LLVM segment in each device architecture
+        `lipo -extract armv7 #{lib} -o armv7.a && otool -l armv7.a`.should.match /__LLVM/
+        `lipo -extract armv7s #{lib} -o armv7s.a && otool -l armv7s.a`.should.match /__LLVM/
+        `lipo -extract arm64 #{lib} -o arm64.a && otool -l arm64.a`.should.match /__LLVM/
+        `rm armv7.a armv7s.a arm64.a`
+      end
+
+      it "does not include Bitcode for simulator arch slices when packaging an iOS Pod" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
+        command.run
+
+        lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
+
+        #Check for __LLVM segment in each simulator architecture
+        `lipo -extract i386 #{lib} -o i386.a && otool -l i386.a`.should.not.match /__LLVM/
+        `lipo -extract x86_64 #{lib} -o x86_64.a && otool -l x86_64.a`.should.not.match /__LLVM/
+        `rm i386.a x86_64.a`
       end
 
       it "does not fail when the pod name contains a dash" do

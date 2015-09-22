@@ -3,7 +3,9 @@ module Symbols
     syms = `nm -gU #{library}`.split("\n")
 
     result = classes_from_symbols(syms)
-    result + constants_from_symbols(syms)
+    result = result + constants_from_symbols(syms)
+
+    result.reject { |e| e == "llvm.cmdline" || e == "llvm.embedded.module" }
   end
 
   module_function :symbols_from_library
