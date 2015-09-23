@@ -106,6 +106,18 @@ module Pod
         `rm i386.a x86_64.a`
       end
 
+      it "does not include local ModuleCache references" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
+        command.run
+
+        lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
+
+        #Check for ModuleCache references
+        `strings #{lib}`.should.not.match /ModuleCache/
+      end
+
       it "does not fail when the pod name contains a dash" do
         SourcesManager.stubs(:search).returns(nil)
 
