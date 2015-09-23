@@ -75,17 +75,13 @@ module Pod
       `libtool -static -o #{output} #{static_libs.join(' ')}`
     end
 
-    def build_with_mangling(platform)
+    def build_with_mangling(platform, options)
       UI.puts 'Mangling symbols'
       defines = Symbols.mangle_for_pod_dependencies(@spec.name, @sandbox_root)
       defines << " " << @spec.consumer(platform).compiler_flags.join(' ')
 
-      if platform.name == :ios
-        defines = "#{defines} ARCHS=\"x86_64 i386 arm64 armv7 armv7s\""
-      end
-
       UI.puts 'Building mangled framework'
-      xcodebuild(defines)
+      xcodebuild(defines, options)
       defines
     end
 
@@ -93,14 +89,15 @@ module Pod
       defines = "GCC_PREPROCESSOR_DEFINITIONS='PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{@spec.name}'"
       defines << " " << @spec.consumer(platform).compiler_flags.join(' ')
 
+      options = ""
       if platform.name == :ios
-        defines = "#{defines} ARCHS=\"x86_64 i386 arm64 armv7 armv7s\""
+        options = "ARCHS=\"arm64 armv7 armv7s\" OTHER_CFLAGS=\"-fembed-bitcode\"" 
       end
 
-      xcodebuild(defines)
+      xcodebuild(defines, options)
 
       if @mangle
-        return build_with_mangling(platform)
+        return build_with_mangling(platform, options)
       end
 
       defines
