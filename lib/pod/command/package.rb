@@ -1,5 +1,4 @@
 require 'tmpdir'
-require 'byebug'
 module Pod
   class Command
     class Package < Command

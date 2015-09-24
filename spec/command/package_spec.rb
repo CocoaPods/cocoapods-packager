@@ -157,7 +157,7 @@ module Pod
         `rm armv7.a armv7s.a arm64.a`
       end
 
-      it "includes Bitcode for device arch slices when packaging an dynamic iOS  Pod" do
+      it "includes Bitcode for device arch slices when packaging an dynamic iOS Pod" do
         SourcesManager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
@@ -210,17 +210,6 @@ module Pod
 
         #Check for ModuleCache references
         `strings #{lib}`.should.not.match /ModuleCache/
-      end
-
-      it "includes the correct architectures when packaging an iOS Pod as --dynamic" do
-        SourcesManager.stubs(:search).returns(nil)
-
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
-        command.run
-
-        lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
-        `lipo #{lib} -verify_arch armv7 armv7s arm64`
-        $?.success?.should == true
       end
 
       it "does not fail when the pod name contains a dash" do
