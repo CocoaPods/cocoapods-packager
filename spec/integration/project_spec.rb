@@ -45,24 +45,6 @@ module Pod
         $?.exitstatus.should == 0
   	 end
 
-     it 'allows integration of a dynamic library without dependencies' do
-        SourcesManager.stubs(:search).returns(nil)
-
-        command = Command.parse(%w{ package spec/fixtures/LibraryDemo.podspec --dynamic})
-        command.run
-
-        log = ''
-
-        Dir.chdir('spec/fixtures/LibraryConsumerDemo') do
-          `pod install 2>&1`
-          log << `xcodebuild -workspace LibraryConsumer.xcworkspace -scheme LibraryConsumer 2>&1`
-          log << `xcodebuild -sdk iphonesimulator -workspace LibraryConsumer.xcworkspace -scheme LibraryConsumer 2>&1`
-        end
-
-        puts log if $?.exitstatus != 0
-        $?.exitstatus.should == 0
-     end
-
      it 'allows integration of a library without dependencies' do
         SourcesManager.stubs(:search).returns(nil)
 
