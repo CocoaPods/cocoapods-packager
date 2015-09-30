@@ -236,12 +236,6 @@ module Pod
           dynamic_project.targets.first.build_configuration_list.build_configurations.each do |config|
             config.build_settings['HEADER_SEARCH_PATHS'] = "$(inherited) #{Dir.pwd}/Pods/Static/Headers/**"
             config.build_settings['USER_HEADER_SEARCH_PATHS'] = "$(inherited) #{Dir.pwd}/Pods/Static/Headers/**"
-
-            if defined?(CODESIGN_NOT_REQUIRED)
-              config.build_settings['CODE_SIGN_IDENTITY'] = ""
-              config.build_settings['CODE_SIGNING_REQUIRED'] = "NO"
-            end
-
           end
           dynamic_project.save
         end

@@ -2,6 +2,10 @@ require File.expand_path('../../spec_helper', __FILE__)
 
 module Pod
   describe Command::Package do
+    after do
+      Dir.glob("Pods").each { |dir| Pathname.new(dir).rmtree }
+    end
+
     it "uses additional spec repos passed on the command line" do
       SourcesManager.stubs(:search).returns(nil)
       nil::NilClass.any_instance.stubs(:install!)
@@ -26,6 +30,8 @@ module Pod
     end
 
     it "creates seperate static and dynamic target if dynamic is passed" do
+      source_dir = Dir.pwd
+
       SourcesManager.stubs(:search).returns(nil)
 
       command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec -dynamic})
@@ -46,6 +52,8 @@ module Pod
 
       static_sandbox_dir.to_s.should.not.be.empty
       dynamic_sandbox_dir.to_s.should.not.be.empty
+
+      Dir.chdir(source_dir)
     end
   end
 end

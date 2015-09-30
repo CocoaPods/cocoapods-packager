@@ -253,7 +253,7 @@ MAP
 
     def xcodebuild(defines = '', args = '', build_dir = 'build', target = 'Pods', project_root = @static_sandbox_root)
 
-      if defined?(CODESIGN_NOT_REQUIRED)
+      if defined?(DONT_CODESIGN)
         args = "#{args} CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO"
       end
 

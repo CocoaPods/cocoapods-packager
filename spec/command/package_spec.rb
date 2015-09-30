@@ -2,7 +2,7 @@ require File.expand_path('../../spec_helper', __FILE__)
 
 module Pod
 
-  CODESIGN_NOT_REQUIRED = true
+  DONT_CODESIGN = true
 
   describe Command::Spec::Package do
     describe 'CLAide' do
