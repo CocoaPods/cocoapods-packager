@@ -18,9 +18,10 @@ module Pod
     def spec_platform(platform)
       fwk_base = platform.name.to_s + '/' + framework_path
       if @dynamic
-        spec = <<SPEC
+        spec = <<RB
+  s.#{platform.name}.platform             = :#{platform.symbolic_name}, '#{platform.deployment_target}'
   s.#{platform.name}.vendored_framework   = '#{fwk_base}'
-SPEC
+RB
       else
        spec = <<SPEC
   s.#{platform.name}.platform             = :#{platform.symbolic_name}, '#{platform.deployment_target}'
@@ -40,7 +41,6 @@ SPEC
         value = "'#{value}'" if value.class == String
         spec += "  s.#{platform.name}.#{attribute} = #{value}\n"
       end
-
       spec
     end
 

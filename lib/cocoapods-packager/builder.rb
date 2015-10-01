@@ -86,7 +86,7 @@ module Pod
       linker_flags = static_linker_flags_in_sandbox
       defines = "#{defines} OTHER_LDFLAGS=\"#{linker_flags.join(' ')}\""
 
-      # Build Target Dynamic Framework for both iPhone and Simulator
+      # Build Target Dynamic Framework for both device and Simulator
       device_defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build\""
       device_options = ios_build_options << " -sdk iphoneos"
       xcodebuild(device_defines, device_options, 'build', "#{@spec.name}", "#{@dynamic_sandbox_root}")
@@ -97,8 +97,8 @@ module Pod
       # Combine architectures
       `lipo #{@dynamic_sandbox_root}/build/#{@spec.name}.framework/#{@spec.name} #{@dynamic_sandbox_root}/build-sim/#{@spec.name}.framework/#{@spec.name} -create -output #{output}`
 
-      FileUtils.mkdir('ios')
-      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework ios`
+      FileUtils.mkdir("#{platform.name}")
+      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{platform.name}`
     end
 
     def build_dynamic_framework_for_mac(platform, defines, output)
