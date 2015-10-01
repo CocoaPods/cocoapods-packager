@@ -106,7 +106,7 @@ module Pod
       linker_flags = static_linker_flags_in_sandbox
       defines = "#{defines} OTHER_LDFLAGS=\"#{linker_flags.join(' ')}\""
 
-      # Build Target Dynamic Framework for both device and Simulator
+      # Build Target Dynamic Framework for osx
       defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build\""
       xcodebuild(defines, nil, 'build', "#{@spec.name}", "#{@dynamic_sandbox_root}")
 
