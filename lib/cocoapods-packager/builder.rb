@@ -102,7 +102,16 @@ module Pod
     end
 
     def build_dynamic_framework_for_mac(platform, defines, output)
-      #TODO Add support for dynamic frameworks on mac
+      # Specify frameworks to link and search paths
+      linker_flags = static_linker_flags_in_sandbox
+      defines = "#{defines} OTHER_LDFLAGS=\"#{linker_flags.join(' ')}\""
+
+      # Build Target Dynamic Framework for both device and Simulator
+      defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build\""
+      xcodebuild(defines, nil, 'build', "#{@spec.name}", "#{@dynamic_sandbox_root}")
+
+      FileUtils.mkdir("#{platform.name}")
+      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{platform.name}`
     end
 
     def build_sim_libraries(platform, defines)
