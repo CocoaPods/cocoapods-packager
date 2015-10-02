@@ -67,8 +67,8 @@ GEM
     i18n (0.7.0)
     json (1.8.3)
     metaclass (0.0.4)
-    mime-types (2.6.1)
-    minitest (5.8.0)
+    mime-types (2.6.2)
+    minitest (5.8.1)
     mocha (0.11.4)
       metaclass (~> 0.0.1)
     mocha-on-bacon (0.2.1)
@@ -115,4 +115,4 @@ DEPENDENCIES
   rake
 
 BUNDLED WITH
-   1.10.5
+   1.10.6

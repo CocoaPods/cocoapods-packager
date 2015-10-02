@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.requires_arc = true
 
   s.osx.deployment_target = '10.7'
-  s.ios.deployment_target = '5.0'
+  s.ios.deployment_target = '6.0'
 
   s.default_subspec = 'Essentials'
   s.header_dir = 'KFData'

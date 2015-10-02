@@ -1,9 +1,10 @@
 module Pod
   class SpecBuilder
-    def initialize(spec, source, embedded)
+    def initialize(spec, source, embedded, dynamic)
       @spec = spec
       @source = source.nil? ? '{}' : source
       @embedded = embedded
+      @dynamic = dynamic
     end
 
     def framework_path
@@ -16,13 +17,20 @@ module Pod
 
     def spec_platform(platform)
       fwk_base = platform.name.to_s + '/' + framework_path
-      spec = <<SPEC
+      if @dynamic
+        spec = <<RB
+  s.#{platform.name}.platform             = :#{platform.symbolic_name}, '#{platform.deployment_target}'
+  s.#{platform.name}.vendored_framework   = '#{fwk_base}'
+RB
+      else
+       spec = <<SPEC
   s.#{platform.name}.platform             = :#{platform.symbolic_name}, '#{platform.deployment_target}'
   s.#{platform.name}.preserve_paths       = '#{fwk_base}'
   s.#{platform.name}.public_header_files  = '#{fwk_base}/Versions/A/Headers/*.h'
   s.#{platform.name}.resource             = '#{fwk_base}/Versions/A/Resources/**/*'
   s.#{platform.name}.vendored_frameworks  = '#{fwk_base}'
 SPEC
+      end
 
       %w(frameworks libraries requires_arc xcconfig).each do |attribute|
         attributes_hash = @spec.attributes_hash[platform.name.to_s]
@@ -33,7 +41,6 @@ SPEC
         value = "'#{value}'" if value.class == String
         spec += "  s.#{platform.name}.#{attribute} = #{value}\n"
       end
-
       spec
     end
 
