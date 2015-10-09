@@ -1,6 +1,6 @@
 module Pod
   class Builder
-    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic)
+    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, exclude_deps)
       @source_dir = source_dir
       @static_sandbox_root = static_sandbox_root
       @dynamic_sandbox_root = dynamic_sandbox_root
@@ -9,6 +9,7 @@ module Pod
       @embedded = embedded
       @mangle = mangle
       @dynamic = dynamic
+      @exclude_deps = exclude_deps
     end
 
     def build(platform, library)
@@ -245,7 +246,12 @@ MAP
     end
 
     def static_libs_in_sandbox(build_dir = 'build')
-      Dir.glob("#{@static_sandbox_root}/#{build_dir}/lib*.a")
+      if @exclude_deps
+        UI.puts 'Excluding dependencies'
+        Dir.glob("#{@static_sandbox_root}/#{build_dir}/lib#{@spec.name}.a")
+      else
+        Dir.glob("#{@static_sandbox_root}/#{build_dir}/lib*.a")
+      end
     end
 
     def static_linker_flags_in_sandbox
