@@ -4,6 +4,7 @@ gemspec
 
 group :development do
   gem 'bacon'
+  gem 'byebug'
   gem 'mocha-on-bacon'
   gem 'mocha', '~> 0.11.4'
   gem 'prettybacon', :git => 'https://github.com/irrationalfab/PrettyBacon.git', :branch => 'master'

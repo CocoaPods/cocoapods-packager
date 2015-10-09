@@ -267,6 +267,7 @@ MAP
       end
 
       command = "xcodebuild #{defines} #{args} CONFIGURATION_BUILD_DIR=#{build_dir} clean build -configuration Release -target #{target} -project #{project_root}/Pods.xcodeproj 2>&1"
+      puts "#{command}"
       output = `#{command}`.lines.to_a
 
       if $?.exitstatus != 0
