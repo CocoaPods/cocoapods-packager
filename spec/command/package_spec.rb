@@ -58,8 +58,7 @@ module Pod
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
         file_command = "nm #{lib}"
         output = `#{file_command}`.lines.to_a
-        # require 'byebug'
-        # byebug
+
         match = output.detect { |line| line =~ /UIButton\(AFNetworking\)/ }
         match.should.not.be.empty
       end
