@@ -49,6 +49,21 @@ module Pod
         output[1].should.match /Mach-O dynamically linked shared library i386/
       end
 
+      it "should link category symbols when dynamic is specified" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
+        command.run
+
+        lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
+        file_command = "nm #{lib}"
+        output = `#{file_command}`.lines.to_a
+        # require 'byebug'
+        # byebug
+        match = output.detect { |line| line =~ /UIButton\(AFNetworking\)/ }
+        match.should.not.be.empty
+      end
+
       it "should produce a dynamic library for OSX when dynamic is specified" do
         SourcesManager.stubs(:search).returns(nil)
 

@@ -18,12 +18,6 @@ module Symbols
     classes.map! { |klass| klass.gsub(/^.*\$_/, '') }
   end
 
-  def categories_from_symbols(syms)
-    classes = syms.select { |klass| klass[/OBJC_\$_CATEGORY_/] }
-    classes.map! { |klass| klass.gsub(/^.*\$_/, '') }
-    classes = classes.uniq
-  end
-
   def constants_from_symbols(syms)
     consts = syms.select { |const| const[/ S /] }
     consts = consts.select { |const| const !~ /OBJC|\.eh/ }
