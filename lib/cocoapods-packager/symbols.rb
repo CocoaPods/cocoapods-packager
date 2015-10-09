@@ -5,9 +5,6 @@ module Symbols
     result = classes_from_symbols(syms)
     result = result + constants_from_symbols(syms)
 
-    all_syms = `nm #{library}`.split("\n")
-    result = result + categories_from_symbols(all_syms)
-
     result.reject { |e| e == "llvm.cmdline" || e == "llvm.embedded.module" }
   end
 
@@ -40,7 +37,6 @@ module Symbols
     consts + other_consts
   end
 
-  module_function :categories_from_symbols
   module_function :classes_from_symbols
   module_function :constants_from_symbols
 end

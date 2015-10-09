@@ -84,7 +84,7 @@ module Pod
     def build_dynamic_framework_for_ios(platform, defines, output)
       # Specify frameworks to link and search paths
       linker_flags = static_linker_flags_in_sandbox
-      defines = "#{defines} OTHER_LDFLAGS=\"#{linker_flags.join(' ')}\""
+      defines = "#{defines} OTHER_LDFLAGS='${inherited} #{linker_flags.join(' ')}'"
 
       # Build Target Dynamic Framework for both device and Simulator
       device_defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build\""
@@ -254,6 +254,7 @@ MAP
         lib_flag = lib.chomp(".a").split("/").last
         "-l#{lib_flag}"
       end
+      linker_flags.reject { |e| e == "-l#{@spec.name}"|| e == "-lPods" }
     end
 
     def ios_build_options
@@ -267,7 +268,6 @@ MAP
       end
 
       command = "xcodebuild #{defines} #{args} CONFIGURATION_BUILD_DIR=#{build_dir} clean build -configuration Release -target #{target} -project #{project_root}/Pods.xcodeproj 2>&1"
-      puts "#{command}"
       output = `#{command}`.lines.to_a
 
       if $?.exitstatus != 0
