@@ -258,7 +258,7 @@ MAP
     end
 
     def ios_build_options
-      return "ARCHS=\'x86_64 i386 arm64 armv7 armv7s\' OTHER_CFLAGS=\'-fembed-bitcode\'"
+      return "ARCHS=\'x86_64 i386 arm64 armv7 armv7s\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\'"
     end
 
     def xcodebuild(defines = '', args = '', build_dir = 'build', target = 'Pods', project_root = @static_sandbox_root)
