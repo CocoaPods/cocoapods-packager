@@ -37,9 +37,11 @@ module Pod
 
     it 'can package a podspec with binary-only dependencies if --no-mangle is specified' do
       command = Command.parse(%w{ package spec/fixtures/CPDColors.podspec --no-mangle })
-      command.run
 
-      true.should == true  # To make the test pass without any shoulds
+      should.not.raise CLAide::Help do
+        command.validate!
+      end
+      command.run
     end
 
     it 'can package a podspec with resource bundles' do

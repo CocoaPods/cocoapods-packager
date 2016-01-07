@@ -43,7 +43,7 @@ module Pod
       def validate!
         super
         help! 'A podspec name or path is required.' unless @spec
-        help! 'podspec has binary-only depedencies, mangling not possible.' if binary_only? @spec
+        help! 'podspec has binary-only depedencies, mangling not possible.' if @mangle and binary_only? @spec
       end
 
       def run
