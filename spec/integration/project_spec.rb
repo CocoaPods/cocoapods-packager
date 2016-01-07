@@ -23,7 +23,7 @@ module Pod
 
         Dir.chdir('spec/fixtures/PackagerTest') do
           `pod install 2>&1`
-          log << `xcodebuild -workspace PackagerTest.xcworkspace -scheme PackagerTest -sdk iphonesimulator CODE_SIGN_IDENTITY=- 2>&1`
+          log << `xcodebuild -workspace PackagerTest.xcworkspace -scheme PackagerTest -sdk iphonesimulator -destination "name=iPhone 6" CODE_SIGN_IDENTITY=- 2>&1`
         end
 
         puts log if $?.exitstatus != 0
@@ -41,7 +41,7 @@ module Pod
 
         Dir.chdir('spec/fixtures/PackagerTest') do
           `pod install 2>&1`
-          log << `xcodebuild -workspace PackagerTest.xcworkspace -scheme PackagerTest -sdk iphonesimulator CODE_SIGN_IDENTITY=- 2>&1`
+          log << `xcodebuild -workspace PackagerTest.xcworkspace -scheme PackagerTest -sdk iphonesimulator -destination "name=iPhone 6" CODE_SIGN_IDENTITY=- 2>&1`
         end
 
         puts log if $?.exitstatus != 0
@@ -59,7 +59,7 @@ module Pod
         Dir.chdir('spec/fixtures/LibraryConsumerDemo') do
           `pod install 2>&1`
           log << `xcodebuild -workspace LibraryConsumer.xcworkspace -scheme LibraryConsumer 2>&1`
-          log << `xcodebuild -sdk iphonesimulator -workspace LibraryConsumer.xcworkspace -scheme LibraryConsumer 2>&1`
+          log << `xcodebuild -sdk iphonesimulator -destination "name=iPhone 6" -workspace LibraryConsumer.xcworkspace -scheme LibraryConsumer 2>&1`
         end
 
         puts log if $?.exitstatus != 0
