@@ -26,16 +26,54 @@ module Pod
         static_installer.install!
 
         unless static_installer.nil?
+          prelink_libs = vendored_libraries(static_installer, "$(PODS_ROOT)") | static_libraries(static_installer, "$(CONFIGURATION_BUILD_DIR)")
           static_installer.pods_project.targets.each do |target|
             target.build_configurations.each do |config|
               config.build_settings['CLANG_MODULES_AUTOLINK'] = 'NO'
               config.build_settings['GCC_GENERATE_DEBUGGING_SYMBOLS'] = 'NO'
+
+              if @prelink and target.name == @spec.name
+                config.build_settings['GENERATE_MASTER_OBJECT_FILE'] = 'YES'
+                config.build_settings['PRELINK_FLAGS'] = '-objc_abi_version 2'
+                config.build_settings['PRELINK_LIBS'] = "#{prelink_libs.join(' ')}"
+              end
             end
           end
           static_installer.pods_project.save
         end
 
         static_installer
+      end
+
+      def vendored_libraries(installer, root)
+        libs = []
+        installer.pod_targets.each do |target|
+          next if target.product_module_name == @spec.name
+
+          target.file_accessors.each do |file_accessor|
+            file_accessor.vendored_static_frameworks.each do |framework|
+              name = File.basename(framework, '.framework')
+              framework_path = framework.relative_path_from(target.sandbox.root)
+              libs << File.join(root, framework_path, name)
+            end
+
+            file_accessor.vendored_static_libraries.each do |library|
+              library_path = library.relative_path_from(target.sandbox.root)
+              libs << File.join(root, library_path)
+            end
+          end
+        end
+        libs.compact
+      end
+
+      def static_libraries(installer, root)
+        installer.pod_targets.map do |target|
+          next if target.product_module_name == @spec.name
+
+          if target.should_build?
+            File.join(root, "lib#{target.product_module_name}.a")
+          end
+        end.compact
       end
 
       def podfile_from_spec(path, spec_name, platform_name, deployment_target, subspecs, sources)

@@ -7,7 +7,7 @@
 //
 
 #import "AppDelegate.h"
-#import "MyDemoClass.h"
+#import <LibraryDemo/MyDemoClass.h>
 
 @interface AppDelegate ()
 

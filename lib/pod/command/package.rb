@@ -15,6 +15,7 @@ module Pod
           ['--embedded',  'Generate embedded frameworks.'],
           ['--library',   'Generate static libraries.'],
           ['--dynamic',   'Generate dynamic framework.'],
+          ['--prelink',   'Perform a single object prelink'],
           ['--subspecs',  'Only include the given subspecs'],
           ['--spec-sources=private,https://github.com/CocoaPods/Specs.git', 'The sources to pull dependant ' \
             'pods from (defaults to https://github.com/CocoaPods/Specs.git)'],
@@ -27,6 +28,7 @@ module Pod
         @library = argv.flag?('library')
         @dynamic = argv.flag?('dynamic')
         @mangle = argv.flag?('mangle', true)
+        @prelink = argv.flag?('prelink', false)
         @name = argv.shift_argument
         @source = argv.shift_argument
         @spec_sources = argv.option('spec-sources', 'https://github.com/CocoaPods/Specs.git').split(',')
@@ -76,7 +78,7 @@ module Pod
         end
 
         begin
-          perform_build(platform, static_sandbox, dynamic_sandbox)
+          perform_build(platform, static_sandbox, dynamic_sandbox, static_installer)
 
         ensure # in case the build fails; see Builder#xcodebuild.
           Pathname.new(config.sandbox_root).rmtree
@@ -123,7 +125,7 @@ module Pod
         [target_dir, work_dir]
       end
 
-      def perform_build(platform, static_sandbox, dynamic_sandbox)
+      def perform_build(platform, static_sandbox, dynamic_sandbox, static_installer)
         static_sandbox_root = "#{config.sandbox_root}"
 
         if @dynamic
@@ -131,15 +133,19 @@ module Pod
           dynamic_sandbox_root = "#{config.sandbox_root}/#{dynamic_sandbox.root.to_s.split('/').last}"
         end
 
+        vendored_libs = vendored_libraries(static_installer, static_sandbox_root)
+
         builder = Pod::Builder.new(
           @source_dir,
           static_sandbox_root,
           dynamic_sandbox_root,
           static_sandbox.public_headers.root,
+          vendored_libs,
           @spec,
           @embedded,
           @mangle,
-          @dynamic)
+          @dynamic,
+          @prelink)
 
         builder.build(platform, @library)
 

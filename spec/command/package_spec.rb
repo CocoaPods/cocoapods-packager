@@ -7,8 +7,11 @@ module Pod
   describe Command::Spec::Package do
     describe 'CLAide' do
       after do
+        Dir.glob("Archs-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("CPDColors-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("KFData-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("NikeKit-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("Prelinkly-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("foo-bar-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("a-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("FH-*").each { |dir| Pathname.new(dir).rmtree }
@@ -90,6 +93,28 @@ module Pod
         output[1].should.match /current ar archive random library/
       end
 
+      it "should incude vendor symbols if the Pod has binary dependencies" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/CPDColors.podspec --no-mangle })
+        command.run
+
+        lib = Dir.glob("CPDColors-*/ios/CPDColors.framework/CPDColors").first
+        symbols = Symbols.symbols_from_library(lib)
+        symbols.should.include('PFObject')
+      end
+
+      it "should incude vendor symbols when prelinking if the Pod has binary dependencies" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/Prelinkly.podspec --no-mangle --prelink })
+        command.run
+
+        lib = Dir.glob("Prelinkly-*/ios/Prelinkly.framework/Prelinkly").first
+        symbols = Symbols.symbols_from_library(lib)
+        symbols.should.include('PFObject')
+      end
+
       it "mangles symbols if the Pod has dependencies" do
         SourcesManager.stubs(:search).returns(nil)
 
@@ -150,6 +175,17 @@ module Pod
         symbols.should == []
       end
 
+      it "contains a single object when prelinking" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/CPDColors.podspec --no-mangle --prelink })
+        command.run
+
+        lib = Dir.glob("CPDColors-*/ios/CPDColors.framework/CPDColors").first
+        objects = `nm -AgU #{lib} | cut -d ':' -f 2`.split.uniq.sort
+        objects.count.should == 1
+      end
+
       it "includes the correct architectures when packaging an iOS Pod" do
         SourcesManager.stubs(:search).returns(nil)
 
@@ -169,6 +205,28 @@ module Pod
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
         `lipo #{lib} -verify_arch armv7 armv7s arm64`
+        $?.success?.should == true
+      end
+
+      it "includes only available architectures when packaging an iOS Pod with binary dependencies" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/Archs.podspec --no-mangle })
+        command.run
+
+        lib = Dir.glob("Archs-*/ios/Archs.framework/Archs").first
+        `lipo #{lib} -verify_arch x86_64 i386 armv7 arm64`
+        $?.success?.should == true
+      end
+
+      it "includes only available architectures when prelinking an iOS Pod with binary dependencies" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/Archs.podspec --no-mangle --prelink })
+        command.run
+
+        lib = Dir.glob("Archs-*/ios/Archs.framework/Archs").first
+        `lipo #{lib} -verify_arch x86_64 i386 armv7 arm64`
         $?.success?.should == true
       end
 
