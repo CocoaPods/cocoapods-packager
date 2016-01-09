@@ -115,6 +115,17 @@ module Pod
         symbols.should.include('PFObject')
       end
 
+      it "should only include the requested symbols if --symbols is specified" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/Prelinkly.podspec --no-mangle --prelink --symbols=spec/fixtures/prelinkly-symbols })
+        command.run
+
+        lib = Dir.glob("Prelinkly-*/ios/Prelinkly.framework/Prelinkly").first
+        symbols = Symbols.symbols_from_library(lib)
+        symbols.should == %w{ CPDObject }
+      end
+
       it "mangles symbols if the Pod has dependencies" do
         SourcesManager.stubs(:search).returns(nil)
 

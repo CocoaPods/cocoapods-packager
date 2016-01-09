@@ -36,6 +36,12 @@ module Pod
                 config.build_settings['GENERATE_MASTER_OBJECT_FILE'] = 'YES'
                 config.build_settings['PRELINK_FLAGS'] = '-objc_abi_version 2'
                 config.build_settings['PRELINK_LIBS'] = "#{prelink_libs.join(' ')}"
+                if @symbols
+                  config.build_settings['EXPORTED_SYMBOLS_FILE'] = @symbols
+                  config.build_settings['STRIP_STYLE'] = 'non-global'
+                  config.build_settings['DEPLOYMENT_POSTPROCESSING'] = 'YES'
+                  config.build_settings['STRIP_INSTALLED_PRODUCT'] = 'YES'
+                end
               end
             end
           end

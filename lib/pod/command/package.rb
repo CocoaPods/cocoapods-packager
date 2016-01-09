@@ -16,6 +16,7 @@ module Pod
           ['--library',   'Generate static libraries.'],
           ['--dynamic',   'Generate dynamic framework.'],
           ['--prelink',   'Perform a single object prelink'],
+          ['--symbols',   'Only export the provided symbols'],
           ['--subspecs',  'Only include the given subspecs'],
           ['--spec-sources=private,https://github.com/CocoaPods/Specs.git', 'The sources to pull dependant ' \
             'pods from (defaults to https://github.com/CocoaPods/Specs.git)'],
@@ -32,6 +33,9 @@ module Pod
         @name = argv.shift_argument
         @source = argv.shift_argument
         @spec_sources = argv.option('spec-sources', 'https://github.com/CocoaPods/Specs.git').split(',')
+
+        symbols = argv.option('symbols', nil)
+        @symbols = File.absolute_path(symbols) unless symbols.nil?
 
         subspecs = argv.option('subspecs')
         @subspecs = subspecs.split(',') unless subspecs.nil?
