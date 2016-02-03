@@ -10,7 +10,7 @@ module Pod
         end
 
         it "includes proper compiler flags for iOS" do
-          @builder.expects(:xcodebuild).with("GCC_PREPROCESSOR_DEFINITIONS='PodsDummy_Pods_Builder=PodsDummy_PodPackage_Builder' -DBASE_FLAG -DIOS_FLAG", "ARCHS='x86_64 i386 arm64 armv7 armv7s' OTHER_CFLAGS='-fembed-bitcode'").returns(nil)
+          @builder.expects(:xcodebuild).with("GCC_PREPROCESSOR_DEFINITIONS='PodsDummy_Pods_Builder=PodsDummy_PodPackage_Builder' -DBASE_FLAG -DIOS_FLAG", "ARCHS='x86_64 i386 arm64 armv7 armv7s' OTHER_CFLAGS='-fembed-bitcode -Qunused-arguments'").returns(nil)
           @builder.compile(Platform.new(:ios))
         end
 
