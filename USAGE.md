@@ -153,7 +153,7 @@ and maybe
 pod repo push MyFramework MyFramework.podspec --allow-warnings
 ```
 
-This last command will, as part of the push to your local repo, actually lint the new framework repo. 
+This last command will, as part of the push to your local repo, actually lint the new framework. If you ultimately want to submit it to the Cocoapods Specs repo, you'd need to lint it anyway. 
 
 ## Test with remote repo
 Point an application at your new framework. If you've gotten this far (linted and packaged) it should definitely work!
