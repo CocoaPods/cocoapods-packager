@@ -40,3 +40,5 @@ $ pod package KFData.podspec
 ```
 
 See also `pod --help`.
+
+For detailed usage instructions, see [Usage Instructions](USAGE.md)
