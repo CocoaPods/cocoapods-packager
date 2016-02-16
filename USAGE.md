@@ -14,7 +14,7 @@ and from AFNetworking like this:
 After packaging up that same development pod using Cocoapods-Packager, the import for `<MyPod/MyClass.h>` will work, but the import for ` <AFNetworking/AFNetworking.h>` (or any other dependencies) will not. Your application will need to pull in those dependencies itself (via Cocoapods or otherwise) to use them. 
 
 ## Should I use name mangling?
-C-language name mangling is an arcane topic that is different for each language. (see [here](https://en.wikipedia.org/wiki/Name_mangling) and [here](http://stackoverflow.com/questions/5664690/how-can-i-find-out-the-symbol-name-the-compiler-generated-for-my-code)). 
+C-language name mangling is an arcane topic that is different for each language (see [here](https://en.wikipedia.org/wiki/Name_mangling) and [here](http://stackoverflow.com/questions/5664690/how-can-i-find-out-the-symbol-name-the-compiler-generated-for-my-code)). 
 
 But for our purposes, all we need to understand is why we'd want to mangle names. In the above example, we pretended to create a framework that contained a dependency on AFNetworking. If we enable name mangling when creating our framework, it will internally use the version of AFNetworking specified in our podspec dependency and allow the application to use whatever version of AFNetworking it wants to use. If you don't mangle, then there can be version (and obviously API) conflicts. For this particular use case, then, name mangling seems like a very good idea! 
 
