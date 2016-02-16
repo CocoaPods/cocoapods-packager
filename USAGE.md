@@ -77,7 +77,7 @@ pod package MyLibrary.podspec --spec-sources=[private pods...],'https://github.c
 - Once your pod lints and packages successfully, take note of the nested podspec file and `iOS` directory that the packager created. (If your pod specifies development platforms other than iOS, directories with those names will be created instead).
 
 ## Create a new pod for framework distribution
-Create a new pod somewhere else:
+Create a new pod somewhere else. (From here on out, I'll assume you've cd'd into your distribution repo):
 ```ruby
 pod lib create [YourPodName]
 ```
@@ -146,6 +146,14 @@ git tag -d 0.0.1
 ```ruby
 pod repo update [YourRepoName]
 ```
+
+and maybe
+
+```ruby
+pod repo push MyFramework MyFramework.podspec --allow-warnings
+```
+
+This last command will, as part of the push to your local repo, actually lint the new framework repo. 
 
 ## Test with remote repo
 Point an application at your new framework. If you've gotten this far (linted and packaged) it should definitely work!
