@@ -77,7 +77,7 @@ pod package MyLibrary.podspec --spec-sources=[private pods...],'https://github.c
 - Once your pod lints and packages successfully, take note of the nested podspec file and `iOS` directory that the packager created. (If your pod specifies development platforms other than iOS, directories with those names will be created instead).
 
 ## Create a new pod for framework distribution
-Create a new pod somewhere else. (From here on out, I'll assume you've cd'd into your distribution repo):
+Create a new pod somewhere else. (From here on out, I'll assume you've cd'd into this new directory):
 ```ruby
 pod lib create [YourPodName]
 ```
