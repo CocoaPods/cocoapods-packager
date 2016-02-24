@@ -1,6 +1,6 @@
 module Pod
   class Builder
-    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic)
+    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config)
       @source_dir = source_dir
       @static_sandbox_root = static_sandbox_root
       @dynamic_sandbox_root = dynamic_sandbox_root
@@ -9,6 +9,7 @@ module Pod
       @embedded = embedded
       @mangle = mangle
       @dynamic = dynamic
+      @config = config
     end
 
     def build(platform, library)
@@ -20,7 +21,7 @@ module Pod
     end
 
     def build_static_library(platform)
-      UI.puts('Building static library')
+      UI.puts("Building static library #{@spec} with configuration #{@config}")
 
       defines = compile(platform)
       build_sim_libraries(platform, defines)
@@ -31,7 +32,7 @@ module Pod
     end
 
     def build_framework(platform)
-      UI.puts('Building framework')
+      UI.puts("Building framework #{@spec} with configuration #{@config}")
 
       defines = compile(platform)
       build_sim_libraries(platform, defines)
@@ -61,7 +62,7 @@ module Pod
     :private
 
     def build_dynamic_framework(platform, defines, output)
-      UI.puts 'Building dynamic Framework'
+      UI.puts("Building dynamic Framework #{@spec} with configuration #{@config}")
 
       clean_directory_for_dynamic_build
       if platform.name == :ios
@@ -267,7 +268,7 @@ MAP
         args = "#{args} CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO"
       end
 
-      command = "xcodebuild #{defines} #{args} CONFIGURATION_BUILD_DIR=#{build_dir} clean build -configuration Release -target #{target} -project #{project_root}/Pods.xcodeproj 2>&1"
+      command = "xcodebuild #{defines} #{args} CONFIGURATION_BUILD_DIR=#{build_dir} clean build -configuration #{@config} -target #{target} -project #{project_root}/Pods.xcodeproj 2>&1"
       output = `#{command}`.lines.to_a
 
       if $?.exitstatus != 0

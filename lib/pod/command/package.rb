@@ -15,6 +15,7 @@ module Pod
           ['--embedded',  'Generate embedded frameworks.'],
           ['--library',   'Generate static libraries.'],
           ['--dynamic',   'Generate dynamic framework.'],
+          ['--configuration',    'Build the specified configuration (e.g. Debug). Defaults to Release'],
           ['--subspecs',  'Only include the given subspecs'],
           ['--spec-sources=private,https://github.com/CocoaPods/Specs.git', 'The sources to pull dependant ' \
             'pods from (defaults to https://github.com/CocoaPods/Specs.git)'],
@@ -33,6 +34,8 @@ module Pod
 
         subspecs = argv.option('subspecs')
         @subspecs = subspecs.split(',') unless subspecs.nil?
+
+        @config = argv.option('configuration') || 'Release'
 
         @source_dir = Dir.pwd
         @spec = spec_with_path(@name)
@@ -139,7 +142,8 @@ module Pod
           @spec,
           @embedded,
           @mangle,
-          @dynamic)
+          @dynamic,
+          @config)
 
         builder.build(platform, @library)
 
