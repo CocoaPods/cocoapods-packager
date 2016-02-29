@@ -35,7 +35,7 @@ module Pod
         subspecs = argv.option('subspecs')
         @subspecs = subspecs.split(',') unless subspecs.nil?
 
-        @config = argv.option('configuration') || 'Release'
+        @config = argv.option('configuration', 'Release')
 
         @source_dir = Dir.pwd
         @spec = spec_with_path(@name)
