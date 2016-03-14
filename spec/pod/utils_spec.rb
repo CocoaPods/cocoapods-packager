@@ -39,7 +39,6 @@ module Pod
 
       command.config.sandbox_root       = 'Pods'
       command.config.integrate_targets  = false
-      command.config.skip_repo_update   = true
 
       static_sandbox = command.build_static_sandbox(true)
       static_installer = command.install_pod(:ios, static_sandbox)
