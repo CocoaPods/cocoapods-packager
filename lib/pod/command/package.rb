@@ -65,7 +65,6 @@ module Pod
       def build_in_sandbox(platform)
         config.sandbox_root       = 'Pods'
         config.integrate_targets  = false
-        config.skip_repo_update   = true
 
         static_sandbox = build_static_sandbox(@dynamic)
         static_installer = install_pod(platform.name, static_sandbox)
