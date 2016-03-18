@@ -12,6 +12,7 @@ module Pod
         Dir.glob("foo-bar-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("a-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("FH-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("cxa-symbols-*").each { |dir| Pathname.new(dir).rmtree }
       end
 
       it 'registers itself' do
@@ -33,7 +34,6 @@ module Pod
           command.run
         end.message.should.match /Unable to find/
       end
-
 
       it "should produce a dynamic library when dynamic is specified" do
         SourcesManager.stubs(:search).returns(nil)
@@ -128,6 +128,30 @@ module Pod
                                 BBUNikePlusTag }
       end
 
+      it "does not mangle standalone preserve symbols" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/cxa-symbols.podspec --preserve-symbols=__cxa_throw})
+        command.run
+
+        lib = Dir.glob("cxa-symbols-*/ios/cxa-symbols.framework/cxa-symbols").first
+        symbols = Symbols.symbols_from_library(lib).uniq.sort.reject { |e| e =~ /Podcxa_symbols|PodsDummy_cxa_symbols/ }
+        symbols.should == %w{ BBUNikePlusActivity BBUNikePlusSessionManager
+                              BBUNikePlusTag __cxa_throw }
+      end
+      
+      it "does not mangle preserve symbol patterns" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/cxa-symbols.podspec --preserve-symbols=__cxa_throw,^KSCrash$})
+        command.run
+
+        lib = Dir.glob("cxa-symbols-*/ios/cxa-symbols.framework/cxa-symbols").first
+        symbols = Symbols.symbols_from_library(lib).uniq.sort.reject { |e| e =~ /Podcxa_symbols|PodsDummy_cxa_symbols/ }
+        symbols.should == %w{ BBUNikePlusActivity BBUNikePlusSessionManager
+                              BBUNikePlusTag KSCrash __cxa_throw }
+      end
+
       it "does not mangle symbols if option --no-mangle is specified" do
         SourcesManager.stubs(:search).returns(nil)
 
@@ -137,6 +161,17 @@ module Pod
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
         symbols = Symbols.symbols_from_library(lib).uniq.sort.select { |e| e =~ /PodNikeKit/ }
         symbols.should == []
+      end
+
+      it "does not mangle preserve symbols if option --no-mangle is specified" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/cxa-symbols.podspec --no-mangle --preserve-symbols=__cxa_throw })
+        command.run
+
+        lib = Dir.glob("cxa-symbols-*/ios/cxa-symbols.framework/cxa-symbols").first
+        symbols = Symbols.symbols_from_library(lib).uniq.sort.reject { |e| e =~ /Podcxa_symbols|PodsDummy_cxa_symbols/ }
+        symbols.should.include '__cxa_throw'
       end
 
       it "does not mangle symbols if option --no-mangle and --dynamic are specified" do

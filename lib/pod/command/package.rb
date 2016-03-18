@@ -10,12 +10,13 @@ module Pod
 
       def self.options
         [
-          ['--force',     'Overwrite existing files.'],
-          ['--no-mangle', 'Do not mangle symbols of depedendant Pods.'],
-          ['--embedded',  'Generate embedded frameworks.'],
-          ['--library',   'Generate static libraries.'],
-          ['--dynamic',   'Generate dynamic framework.'],
-          ['--subspecs',  'Only include the given subspecs'],
+          ['--force',            'Overwrite existing files.'],
+          ['--no-mangle',        'Do not mangle symbols of depedendant Pods.'],
+          ['--preserve-symbols', 'Do not mangle selected symbol patterns.'],
+          ['--embedded',         'Generate embedded frameworks.'],
+          ['--library',          'Generate static libraries.'],
+          ['--dynamic',          'Generate dynamic framework.'],
+          ['--subspecs',         'Only include the given subspecs'],
           ['--spec-sources=private,https://github.com/CocoaPods/Specs.git', 'The sources to pull dependant ' \
             'pods from (defaults to https://github.com/CocoaPods/Specs.git)'],
         ]
@@ -37,6 +38,9 @@ module Pod
         @source_dir = Dir.pwd
         @spec = spec_with_path(@name)
         @spec = spec_with_name(@name) unless @spec
+        
+        preserve_symbols = argv.option('preserve-symbols')
+        @preserve_symbols = preserve_symbols.split(',') unless preserve_symbols.nil?
         super
       end
 
@@ -138,6 +142,7 @@ module Pod
           @spec,
           @embedded,
           @mangle,
+          @preserve_symbols,
           @dynamic)
 
         builder.build(platform, @library)
