@@ -1,6 +1,6 @@
 module Pod
   class Builder
-    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic)
+    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, preserve_symbols, dynamic)
       @source_dir = source_dir
       @static_sandbox_root = static_sandbox_root
       @dynamic_sandbox_root = dynamic_sandbox_root
@@ -8,6 +8,7 @@ module Pod
       @spec = spec
       @embedded = embedded
       @mangle = mangle
+      @preserve_symbols = preserve_symbols
       @dynamic = dynamic
     end
 
@@ -137,7 +138,7 @@ module Pod
 
     def build_with_mangling(platform, options)
       UI.puts 'Mangling symbols'
-      defines = Symbols.mangle_for_pod_dependencies(@spec.name, @static_sandbox_root)
+      defines = Symbols.mangle_for_pod_dependencies(@spec.name, @static_sandbox_root, @preserve_symbols)
       defines << " " << @spec.consumer(platform).compiler_flags.join(' ')
 
       UI.puts 'Building mangled framework'
