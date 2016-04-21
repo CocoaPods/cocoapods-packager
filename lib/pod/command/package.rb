@@ -16,6 +16,7 @@ module Pod
           ['--library',   'Generate static libraries.'],
           ['--dynamic',   'Generate dynamic framework.'],
           ['--exclude-deps', 'Exclude symbols from dependencies.'],
+          ['--configuration',    'Build the specified configuration (e.g. Debug). Defaults to Release'],
           ['--subspecs',  'Only include the given subspecs'],
           ['--spec-sources=private,https://github.com/CocoaPods/Specs.git', 'The sources to pull dependant ' \
             'pods from (defaults to https://github.com/CocoaPods/Specs.git)'],
@@ -35,6 +36,8 @@ module Pod
 
         subspecs = argv.option('subspecs')
         @subspecs = subspecs.split(',') unless subspecs.nil?
+
+        @config = argv.option('configuration', 'Release')
 
         @source_dir = Dir.pwd
         @spec = spec_with_path(@name)
@@ -67,7 +70,6 @@ module Pod
       def build_in_sandbox(platform)
         config.sandbox_root       = 'Pods'
         config.integrate_targets  = false
-        config.skip_repo_update   = true
 
         static_sandbox = build_static_sandbox(@dynamic)
         static_installer = install_pod(platform.name, static_sandbox)
@@ -142,6 +144,7 @@ module Pod
           @embedded,
           @mangle,
           @dynamic,
+          @config,
           @exclude_deps)
 
         builder.build(platform, @library)

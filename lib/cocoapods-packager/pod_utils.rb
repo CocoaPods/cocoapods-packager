@@ -39,27 +39,17 @@ module Pod
       end
 
       def podfile_from_spec(path, spec_name, platform_name, deployment_target, subspecs, sources)
+        options = {}
+        if path
+          options[:podspec] = path
+        else
+          options[:path] = '.'
+        end
+        options[:subspecs] = subspecs if subspecs
         Pod::Podfile.new do
-
           sources.each { |s| source s }
           platform(platform_name, deployment_target)
-          if path
-            if subspecs
-              subspecs.each do |subspec|
-                pod spec_name + '/' + subspec, :podspec => path
-              end
-            else
-              pod spec_name, :podspec => path
-            end
-          else
-            if subspecs
-              subspecs.each do |subspec|
-                pod spec_name + '/' + subspec, :path => '.'
-              end
-            else
-              pod spec_name, :path => '.'
-            end
-          end
+          pod(spec_name, options)
         end
       end
 
@@ -230,12 +220,12 @@ module Pod
           dynamic_project.development_pods.remove_from_project if dynamic_project.development_pods.empty?
           dynamic_project.sort(:groups_position => :below)
           dynamic_project.recreate_user_schemes(false)
-          dynamic_project.predictabilize_uuids if config.deterministic_uuids?
 
           # Edit search paths so that we can find our dependency headers
           dynamic_project.targets.first.build_configuration_list.build_configurations.each do |config|
             config.build_settings['HEADER_SEARCH_PATHS'] = "$(inherited) #{Dir.pwd}/Pods/Static/Headers/**"
             config.build_settings['USER_HEADER_SEARCH_PATHS'] = "$(inherited) #{Dir.pwd}/Pods/Static/Headers/**"
+            config.build_settings['OTHER_LDFLAGS'] = "$(inherited) -ObjC"
           end
           dynamic_project.save
         end

@@ -1,6 +1,6 @@
 module Pod
   class Builder
-    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, exclude_deps)
+    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config, exclude_deps)
       @source_dir = source_dir
       @static_sandbox_root = static_sandbox_root
       @dynamic_sandbox_root = dynamic_sandbox_root
@@ -9,6 +9,7 @@ module Pod
       @embedded = embedded
       @mangle = mangle
       @dynamic = dynamic
+      @config = config
       @exclude_deps = exclude_deps
     end
 
@@ -21,7 +22,7 @@ module Pod
     end
 
     def build_static_library(platform)
-      UI.puts('Building static library')
+      UI.puts("Building static library #{@spec} with configuration #{@config}")
 
       defines = compile(platform)
       build_sim_libraries(platform, defines)
@@ -32,7 +33,7 @@ module Pod
     end
 
     def build_framework(platform)
-      UI.puts('Building framework')
+      UI.puts("Building framework #{@spec} with configuration #{@config}")
 
       defines = compile(platform)
       build_sim_libraries(platform, defines)
@@ -62,7 +63,7 @@ module Pod
     :private
 
     def build_dynamic_framework(platform, defines, output)
-      UI.puts 'Building dynamic Framework'
+      UI.puts("Building dynamic Framework #{@spec} with configuration #{@config}")
 
       clean_directory_for_dynamic_build
       if platform.name == :ios
@@ -85,7 +86,7 @@ module Pod
     def build_dynamic_framework_for_ios(platform, defines, output)
       # Specify frameworks to link and search paths
       linker_flags = static_linker_flags_in_sandbox
-      defines = "#{defines} OTHER_LDFLAGS=\"#{linker_flags.join(' ')}\""
+      defines = "#{defines} OTHER_LDFLAGS='$(inherited) #{linker_flags.join(' ')}'"
 
       # Build Target Dynamic Framework for both device and Simulator
       device_defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build\""
@@ -156,7 +157,7 @@ module Pod
     end
 
     def compile(platform)
-      defines = "GCC_PREPROCESSOR_DEFINITIONS='PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{@spec.name}'"
+      defines = "GCC_PREPROCESSOR_DEFINITIONS='$(inherited) PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{@spec.name}'"
       defines << " " << @spec.consumer(platform).compiler_flags.join(' ')
 
       if platform.name == :ios
@@ -260,19 +261,20 @@ MAP
         lib_flag = lib.chomp(".a").split("/").last
         "-l#{lib_flag}"
       end
+      linker_flags.reject { |e| e == "-l#{@spec.name}"|| e == "-lPods" }
     end
 
     def ios_build_options
-      return "ARCHS=\'x86_64 i386 arm64 armv7 armv7s\' OTHER_CFLAGS=\'-fembed-bitcode\'"
+      return "ARCHS=\'x86_64 i386 arm64 armv7 armv7s\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\'"
     end
 
-    def xcodebuild(defines = '', args = '', build_dir = 'build', target = 'Pods', project_root = @static_sandbox_root)
+    def xcodebuild(defines = '', args = '', build_dir = 'build', target = 'Pods', project_root = @static_sandbox_root, config = @config)
 
       if defined?(Pod::DONT_CODESIGN)
         args = "#{args} CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO"
       end
 
-      command = "xcodebuild #{defines} #{args} CONFIGURATION_BUILD_DIR=#{build_dir} clean build -configuration Release -target #{target} -project #{project_root}/Pods.xcodeproj 2>&1"
+      command = "xcodebuild #{defines} #{args} CONFIGURATION_BUILD_DIR=#{build_dir} clean build -configuration #{config} -target #{target} -project #{project_root}/Pods.xcodeproj 2>&1"
       output = `#{command}`.lines.to_a
 
       if $?.exitstatus != 0

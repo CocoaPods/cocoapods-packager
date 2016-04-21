@@ -19,12 +19,12 @@ module Pod
       fwk_base = platform.name.to_s + '/' + framework_path
       if @dynamic
         spec = <<RB
-  s.#{platform.name}.platform             = :#{platform.symbolic_name}, '#{platform.deployment_target}'
+  s.#{platform.name}.deployment_target    = '#{platform.deployment_target}'
   s.#{platform.name}.vendored_framework   = '#{fwk_base}'
 RB
       else
        spec = <<SPEC
-  s.#{platform.name}.platform             = :#{platform.symbolic_name}, '#{platform.deployment_target}'
+  s.#{platform.name}.deployment_target    = '#{platform.deployment_target}'
   s.#{platform.name}.preserve_paths       = '#{fwk_base}'
   s.#{platform.name}.public_header_files  = '#{fwk_base}/Versions/A/Headers/*.h'
   s.#{platform.name}.resource             = '#{fwk_base}/Versions/A/Resources/**/*'
@@ -46,7 +46,6 @@ SPEC
 
     def spec_metadata
       spec = spec_header
-      spec += spec_single_platform_fix
       spec
     end
 
@@ -70,16 +69,6 @@ SPEC
       end
 
       spec + "  s.source = #{@source}\n\n"
-    end
-
-    def spec_single_platform_fix
-      return '' if @spec.available_platforms.length > 1
-
-      platform = @spec.available_platforms.first
-
-      <<SPEC
-  s.platform = :#{platform.symbolic_name}, '#{platform.deployment_target}'
-SPEC
     end
   end
 end

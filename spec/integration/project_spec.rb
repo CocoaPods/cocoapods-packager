@@ -1,6 +1,9 @@
 require File.expand_path('../../spec_helper', __FILE__)
 
 module Pod
+
+  DONT_CODESIGN = true
+
   describe Command::Spec::Package do
     describe 'IntegrationTests' do
       after do

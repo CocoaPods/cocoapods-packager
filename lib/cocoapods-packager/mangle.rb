@@ -20,7 +20,7 @@ module Symbols
       all_syms += syms.map! { |sym| alias_symbol sym, pod_name }
     end
 
-    "GCC_PREPROCESSOR_DEFINITIONS='${inherited} #{all_syms.uniq.join(' ')}'"
+    "GCC_PREPROCESSOR_DEFINITIONS='$(inherited) #{all_syms.uniq.join(' ')}'"
   end
 
   def alias_symbol(sym, pod_name)
