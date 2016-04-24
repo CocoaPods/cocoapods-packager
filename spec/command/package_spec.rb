@@ -150,6 +150,17 @@ module Pod
         symbols.should == []
       end
 
+      it "does not include symbols from dependencies if option --exclude-deps is specified" do
+        SourcesManager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --exclude-deps })
+        command.run
+
+        lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
+        symbols = Symbols.symbols_from_library(lib).uniq.sort.select { |e| e =~ /AFNetworking|ISO8601DateFormatter|KZPropertyMapper/ }
+        symbols.should == []
+      end
+
       it "includes the correct architectures when packaging an iOS Pod" do
         SourcesManager.stubs(:search).returns(nil)
 

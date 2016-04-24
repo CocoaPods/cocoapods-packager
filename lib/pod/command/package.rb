@@ -49,6 +49,7 @@ module Pod
         super
         help! 'A podspec name or path is required.' unless @spec
         help! 'podspec has binary-only depedencies, mangling not possible.' if @mangle and binary_only? @spec
+        help! '--exclude-deps option can only be used for static libraries' if @exclude_deps and @dynamic
       end
 
       def run

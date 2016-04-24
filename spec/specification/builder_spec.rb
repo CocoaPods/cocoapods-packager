@@ -6,7 +6,7 @@ module Pod
       describe 'compiler flags' do
         before do
           @spec = Specification.from_file('spec/fixtures/Builder.podspec')
-          @builder = Builder.new(nil, nil, nil, nil, @spec, nil, nil, nil, nil)
+          @builder = Builder.new(nil, nil, nil, nil, @spec, nil, nil, nil, nil, nil)
         end
 
         it "includes proper compiler flags for iOS" do
