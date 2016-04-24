@@ -28,6 +28,13 @@ module Pod
       end.message.should.match /binary-only/
     end
 
+    it 'presents the help if both --exclude-deps and --dynamic are specified' do
+      command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --exclude-deps --dynamic })
+      should.raise CLAide::Help do
+        command.validate!
+      end.message.should.match /--exclude-deps option can only be used for static libraries/
+    end
+
     it 'can package a podspec with only resources' do
       command = Command.parse(%w{ package spec/fixtures/layer-client-messaging-schema.podspec --no-mangle })
       command.run

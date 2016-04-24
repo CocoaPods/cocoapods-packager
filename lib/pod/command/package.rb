@@ -15,6 +15,7 @@ module Pod
           ['--embedded',  'Generate embedded frameworks.'],
           ['--library',   'Generate static libraries.'],
           ['--dynamic',   'Generate dynamic framework.'],
+          ['--exclude-deps', 'Exclude symbols from dependencies.'],
           ['--configuration',    'Build the specified configuration (e.g. Debug). Defaults to Release'],
           ['--subspecs',  'Only include the given subspecs'],
           ['--spec-sources=private,https://github.com/CocoaPods/Specs.git', 'The sources to pull dependant ' \
@@ -28,6 +29,7 @@ module Pod
         @library = argv.flag?('library')
         @dynamic = argv.flag?('dynamic')
         @mangle = argv.flag?('mangle', true)
+        @exclude_deps = argv.flag?('exclude-deps', false)
         @name = argv.shift_argument
         @source = argv.shift_argument
         @spec_sources = argv.option('spec-sources', 'https://github.com/CocoaPods/Specs.git').split(',')
@@ -46,7 +48,8 @@ module Pod
       def validate!
         super
         help! 'A podspec name or path is required.' unless @spec
-        help! 'podspec has binary-only depedencies, mangling not possible.' if binary_only? @spec
+        help! 'podspec has binary-only depedencies, mangling not possible.' if @mangle and binary_only? @spec
+        help! '--exclude-deps option can only be used for static libraries' if @exclude_deps and @dynamic
       end
 
       def run
@@ -142,7 +145,8 @@ module Pod
           @embedded,
           @mangle,
           @dynamic,
-          @config)
+          @config,
+          @exclude_deps)
 
         builder.build(platform, @library)
 
