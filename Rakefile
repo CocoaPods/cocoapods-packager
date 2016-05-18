@@ -5,8 +5,8 @@ def specs(dir)
 end
 
 desc 'Runs all the specs'
-task :specs do
+task :spec do
   sh "bundle exec bacon #{specs('**')}"
 end
 
-task :default => :specs
+task :default => :spec

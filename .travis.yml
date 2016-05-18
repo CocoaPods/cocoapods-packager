@@ -5,5 +5,5 @@ before_install:
 - bundle install
 - bundle exec pod repo update --silent
 script:
-- bundle exec rake specs
+- bundle exec rake spec
 - bundle exec rubocop
