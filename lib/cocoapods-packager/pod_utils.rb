@@ -50,6 +50,28 @@ module Pod
           sources.each { |s| source s }
           platform(platform_name, deployment_target)
           pod(spec_name, options)
+
+          install!('cocoapods', { :integrate_targets => false })
+
+          target('packager') do
+            if path
+              if subspecs
+                subspecs.each do |subspec|
+                  pod spec_name + '/' + subspec, :podspec => path
+                end
+              else
+                pod spec_name, :podspec => path
+              end
+            else
+              if subspecs
+                subspecs.each do |subspec|
+                  pod spec_name + '/' + subspec, :path => '.'
+                end
+              else
+                pod spec_name, :path => '.'
+              end
+            end
+          end
         end
       end
 

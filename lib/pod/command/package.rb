@@ -69,8 +69,8 @@ module Pod
       :private
 
       def build_in_sandbox(platform)
+        config.installation_root  = Pathname.new(Dir.pwd)
         config.sandbox_root       = 'Pods'
-        config.integrate_targets  = false
 
         static_sandbox = build_static_sandbox(@dynamic)
         static_installer = install_pod(platform.name, static_sandbox)
