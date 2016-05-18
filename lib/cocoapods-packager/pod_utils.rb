@@ -51,7 +51,9 @@ module Pod
           platform(platform_name, deployment_target)
           pod(spec_name, options)
 
-          install!('cocoapods', :integrate_targets => false)
+          install!('cocoapods',
+                   :integrate_targets => false,
+                   :deterministic_uuids => false)
 
           target('packager') do
             if path
