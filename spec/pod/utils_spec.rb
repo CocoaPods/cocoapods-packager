@@ -35,10 +35,10 @@ module Pod
       Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
       command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec -dynamic})
-      command. create_working_directory
+      t, w = command.create_working_directory
 
-      command.config.sandbox_root       = 'Pods'
-      command.config.integrate_targets  = false
+      command.config.installation_root = Pathname.new(w)
+      command.config.sandbox_root      = 'Pods'
 
       static_sandbox = command.build_static_sandbox(true)
       static_installer = command.install_pod(:ios, static_sandbox)
