@@ -146,7 +146,8 @@ module Pod
           @mangle,
           @dynamic,
           @config,
-          @exclude_deps)
+          @exclude_deps
+        )
 
         builder.build(platform, @library)
 
