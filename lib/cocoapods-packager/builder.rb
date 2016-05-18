@@ -276,7 +276,7 @@ MAP
       command = "xcodebuild #{defines} #{args} CONFIGURATION_BUILD_DIR=#{build_dir} clean build -configuration #{config} -target #{target} -project #{project_root}/Pods.xcodeproj 2>&1"
       output = `#{command}`.lines.to_a
 
-      if $CHILD_STATUS.exitstatus != 0
+      if $?.exitstatus != 0
         puts UI::BuildFailedReport.report(command, output)
 
         # Note: We use `Process.exit` here because it fires a `SystemExit`
