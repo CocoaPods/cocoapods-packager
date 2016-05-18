@@ -9,4 +9,6 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '6.0'
   s.osx.deployment_target = '10.9'
 
+  s.license = 'GPL' # :trollface:
+  s.homepage = 'https://www.youtube.com/watch?v=32UGD0fV45g'
 end
