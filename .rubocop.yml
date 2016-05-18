@@ -29,3 +29,6 @@ Metrics/PerceivedComplexity:
 Metrics/ParameterLists:
   Enabled: false
 
+Style/SpecialGlobalVars:
+  EnforcedStyle: use_perl_names
+
