@@ -8,4 +8,5 @@ group :development do
   gem 'mocha', '~> 0.11.4'
   gem 'prettybacon'
   gem 'coveralls', :require => false
+  gem 'rubocop'
 end
