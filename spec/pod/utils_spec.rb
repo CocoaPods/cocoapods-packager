@@ -7,7 +7,7 @@ module Pod
     end
 
     it "uses additional spec repos passed on the command line" do
-      SourcesManager.stubs(:search).returns(nil)
+      Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
       nil::NilClass.any_instance.stubs(:install!)
       Installer.expects(:new).with {
         |sandbox, podfile| podfile.sources == ['foo', 'bar']
@@ -19,7 +19,7 @@ module Pod
     end
 
     it "uses only the master repo if no spec repos were passed" do
-      SourcesManager.stubs(:search).returns(nil)
+      Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
       nil::NilClass.any_instance.stubs(:install!)
       Installer.expects(:new).with {
           |sandbox, podfile| podfile.sources == ['https://github.com/CocoaPods/Specs.git']
@@ -32,7 +32,7 @@ module Pod
     it "creates seperate static and dynamic target if dynamic is passed" do
       source_dir = Dir.pwd
 
-      SourcesManager.stubs(:search).returns(nil)
+      Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
       command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec -dynamic})
       command. create_working_directory

@@ -69,7 +69,7 @@ module Pod
       def spec_with_name(name)
         return if name.nil?
 
-        set = SourcesManager.search(Dependency.new(name))
+        set = Pod::Config.instance.sources_manager.search(Dependency.new(name))
         return nil if set.nil?
 
         set.specification.root

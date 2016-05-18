@@ -13,7 +13,7 @@ module Pod
       end
 
   	 it 'Allow integration into project alongside CocoaPods' do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
         command.run
@@ -31,7 +31,7 @@ module Pod
   	 end
 
      it 'Allow integration of dynamic framework into project alongside CocoaPods' do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
         command.run
@@ -49,7 +49,7 @@ module Pod
   	 end
 
      it 'allows integration of a library without dependencies' do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/LibraryDemo.podspec })
         command.run
