@@ -2,7 +2,7 @@ module Pod
   class SpecBuilder
     def initialize(spec, source, embedded, dynamic)
       @spec = spec
-      @source = source.nil? ? '{}' : source
+      @source = source.nil? ? '{ :path => \'.\' }' : source
       @embedded = embedded
       @dynamic = dynamic
     end
