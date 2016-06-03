@@ -53,8 +53,7 @@ RB
          deployment_target xcconfig).each do |attribute|
         value = @spec.attributes_hash[attribute]
         next if value.nil?
-
-        value = "'#{value}'" if value.class == String
+        value = value.dump if value.class == String
         spec += "  s.#{attribute} = #{value}\n"
       end
 
