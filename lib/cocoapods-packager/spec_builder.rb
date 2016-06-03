@@ -17,20 +17,10 @@ module Pod
 
     def spec_platform(platform)
       fwk_base = platform.name.to_s + '/' + framework_path
-      spec = if @dynamic
-               <<RB
+      spec = <<RB
   s.#{platform.name}.deployment_target    = '#{platform.deployment_target}'
   s.#{platform.name}.vendored_framework   = '#{fwk_base}'
 RB
-             else
-               <<SPEC
-  s.#{platform.name}.deployment_target    = '#{platform.deployment_target}'
-  s.#{platform.name}.preserve_paths       = '#{fwk_base}'
-  s.#{platform.name}.public_header_files  = '#{fwk_base}/Versions/A/Headers/*.h'
-  s.#{platform.name}.resource             = '#{fwk_base}/Versions/A/Resources/**/*'
-  s.#{platform.name}.vendored_frameworks  = '#{fwk_base}'
-SPEC
-             end
 
       %w(frameworks libraries requires_arc xcconfig).each do |attribute|
         attributes_hash = @spec.attributes_hash[platform.name.to_s]
