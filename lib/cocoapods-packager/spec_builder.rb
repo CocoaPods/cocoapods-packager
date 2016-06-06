@@ -22,7 +22,7 @@ module Pod
   s.#{platform.name}.vendored_framework   = '#{fwk_base}'
 RB
 
-      %w(frameworks libraries requires_arc xcconfig).each do |attribute|
+      %w(frameworks weak_frameworks libraries requires_arc xcconfig).each do |attribute|
         attributes_hash = @spec.attributes_hash[platform.name.to_s]
         next if attributes_hash.nil?
         value = attributes_hash[attribute]
@@ -49,7 +49,7 @@ RB
       spec = "Pod::Spec.new do |s|\n"
 
       %w(name version summary license authors homepage description social_media_url
-         docset_url documentation_url screenshots frameworks libraries requires_arc
+         docset_url documentation_url screenshots frameworks weak_frameworks libraries requires_arc
          deployment_target xcconfig).each do |attribute|
         value = @spec.attributes_hash[attribute]
         next if value.nil?
