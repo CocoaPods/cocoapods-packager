@@ -7,10 +7,29 @@ AllCops:
   Exclude:
     - spec/**/*
     - spec/fixtures/**/*
+    - vendor/**/*
 
 Style/Tab:
   Enabled: false
 
 LineLength:
   Enabled: false
+
+ClassLength:
+  Enabled: false
+
+MethodLength:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false
+
+Style/SpecialGlobalVars:
+  EnforcedStyle: use_perl_names
 

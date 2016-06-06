@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.homepage = 'https://github.com/kylef/KFData'
   s.authors = { 'Kyle Fuller' => 'inbox@kylefuller.co.uk' }
   s.social_media_url = 'https://twitter.com/kylefuller'
-  s.source = { :git => 'https://github.com/kylef/KFData.git', :tag => s.version.to_s }
+  s.source = { :git => 'https://github.com/neonichu/KFData.git', :commit => '68ee9d94fbfa4e12db9401dd0dea205c18ad1c01' }
 
   s.requires_arc = true
 

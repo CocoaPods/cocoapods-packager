@@ -25,7 +25,7 @@ module Framework
       make_current_version
     end
 
-    :private
+    private
 
     def make_current_version
       current_version_path = @versions_path + Pathname.new('../Current')

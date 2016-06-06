@@ -1,14 +1,14 @@
 module Pod
   class Command
     class Package < Command
-      :private
+      private
 
       def build_static_sandbox(dynamic)
-        if dynamic
-          static_sandbox_root = Pathname.new(config.sandbox_root + "/Static")
-        else
-          static_sandbox_root = Pathname.new(config.sandbox_root)
-        end
+        static_sandbox_root = if dynamic
+                                Pathname.new(config.sandbox_root + '/Static')
+                              else
+                                Pathname.new(config.sandbox_root)
+                              end
         Sandbox.new(static_sandbox_root)
       end
 
@@ -19,7 +19,7 @@ module Pod
           platform_name,
           @spec.deployment_target(platform_name),
           @subspecs,
-          @spec_sources,
+          @spec_sources
         )
 
         static_installer = Installer.new(sandbox, podfile)
@@ -50,6 +50,28 @@ module Pod
           sources.each { |s| source s }
           platform(platform_name, deployment_target)
           pod(spec_name, options)
+
+          install!('cocoapods',
+                   :integrate_targets => false,
+                   :deterministic_uuids => false)
+
+          target('packager') do
+            if path
+              if subspecs
+                subspecs.each do |subspec|
+                  pod spec_name + '/' + subspec, :podspec => path
+                end
+              else
+                pod spec_name, :podspec => path
+              end
+            elsif subspecs
+              subspecs.each do |subspec|
+                pod spec_name + '/' + subspec, :path => '.'
+              end
+            else
+              pod spec_name, :path => '.'
+            end
+          end
         end
       end
 
@@ -69,14 +91,13 @@ module Pod
       def spec_with_name(name)
         return if name.nil?
 
-        set = SourcesManager.search(Dependency.new(name))
+        set = Pod::Config.instance.sources_manager.search(Dependency.new(name))
         return nil if set.nil?
 
         set.specification.root
       end
 
       def spec_with_path(path)
-
         return if path.nil? || !Pathname.new(path).exist?
 
         @path = path
@@ -94,13 +115,12 @@ module Pod
         Specification.from_file(path)
       end
 
-
       #----------------------
       # Dynamic Project Setup
       #----------------------
 
-      def build_dynamic_sandbox(static_sandbox, static_installer)
-        dynamic_sandbox_root = Pathname.new(config.sandbox_root + "/Dynamic")
+      def build_dynamic_sandbox(_static_sandbox, _static_installer)
+        dynamic_sandbox_root = Pathname.new(config.sandbox_root + '/Dynamic')
         dynamic_sandbox = Sandbox.new(dynamic_sandbox_root)
 
         dynamic_sandbox
@@ -130,7 +150,6 @@ module Pod
 
         # 9. Write the actual Xcodeproject to the dynamic sandbox.
         write_pod_project(project, dynamic_sandbox)
-
       end
 
       def build_dynamic_target(dynamic_sandbox, static_installer)
@@ -164,13 +183,12 @@ module Pod
         pods_project
       end
 
-
-      def copy_dynamic_target(static_sandbox, dynamic_target, dynamic_sandbox)
+      def copy_dynamic_target(static_sandbox, _dynamic_target, dynamic_sandbox)
         command = "cp -a #{static_sandbox.root}/#{@spec.name} #{dynamic_sandbox.root}"
         `#{command}`
       end
 
-      def copy_dynamic_supporting_files(static_sandbox, dynamic_target, dynamic_sandbox)
+      def copy_dynamic_supporting_files(_static_sandbox, dynamic_target, _dynamic_sandbox)
         support_dir = Pathname.new(dynamic_target.support_files_dir.to_s.chomp("/#{dynamic_target.name}"))
         support_dir.mkdir
       end
@@ -214,7 +232,6 @@ module Pod
       end
 
       def write_pod_project(dynamic_project, dynamic_sandbox)
-
         UI.message "- Writing Xcode project file to #{UI.path dynamic_sandbox.project_path}" do
           dynamic_project.pods.remove_from_project if dynamic_project.pods.empty?
           dynamic_project.development_pods.remove_from_project if dynamic_project.development_pods.empty?
@@ -225,7 +242,7 @@ module Pod
           dynamic_project.targets.first.build_configuration_list.build_configurations.each do |config|
             config.build_settings['HEADER_SEARCH_PATHS'] = "$(inherited) #{Dir.pwd}/Pods/Static/Headers/**"
             config.build_settings['USER_HEADER_SEARCH_PATHS'] = "$(inherited) #{Dir.pwd}/Pods/Static/Headers/**"
-            config.build_settings['OTHER_LDFLAGS'] = "$(inherited) -ObjC"
+            config.build_settings['OTHER_LDFLAGS'] = '$(inherited) -ObjC'
           end
           dynamic_project.save
         end

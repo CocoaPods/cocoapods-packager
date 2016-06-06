@@ -5,6 +5,7 @@ AllCops:
     - ./*.gemspec
   Exclude:
     - spec/fixtures/**/*
+    - vendor/**/*
 
 # At the moment not ready to be used
 # https://github.com/bbatsov/rubocop/issues/947

@@ -2,7 +2,7 @@ module Pod
   class SpecBuilder
     def initialize(spec, source, embedded, dynamic)
       @spec = spec
-      @source = source.nil? ? '{}' : source
+      @source = source.nil? ? '{ :path => \'.\' }' : source
       @embedded = embedded
       @dynamic = dynamic
     end
@@ -17,20 +17,20 @@ module Pod
 
     def spec_platform(platform)
       fwk_base = platform.name.to_s + '/' + framework_path
-      if @dynamic
-        spec = <<RB
+      spec = if @dynamic
+               <<RB
   s.#{platform.name}.deployment_target    = '#{platform.deployment_target}'
   s.#{platform.name}.vendored_framework   = '#{fwk_base}'
 RB
-      else
-       spec = <<SPEC
+             else
+               <<SPEC
   s.#{platform.name}.deployment_target    = '#{platform.deployment_target}'
   s.#{platform.name}.preserve_paths       = '#{fwk_base}'
   s.#{platform.name}.public_header_files  = '#{fwk_base}/Versions/A/Headers/*.h'
   s.#{platform.name}.resource             = '#{fwk_base}/Versions/A/Resources/**/*'
   s.#{platform.name}.vendored_frameworks  = '#{fwk_base}'
 SPEC
-      end
+             end
 
       %w(frameworks libraries requires_arc xcconfig).each do |attribute|
         attributes_hash = @spec.attributes_hash[platform.name.to_s]
@@ -53,7 +53,7 @@ SPEC
       "end\n"
     end
 
-    :private
+    private
 
     def spec_header
       spec = "Pod::Spec.new do |s|\n"

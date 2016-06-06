@@ -5,7 +5,7 @@ module Pod
       self.summary = 'Package a podspec into a static library.'
       self.arguments = [
         CLAide::Argument.new('NAME', true),
-        CLAide::Argument.new('SOURCE', false),
+        CLAide::Argument.new('SOURCE', false)
       ]
 
       def self.options
@@ -16,10 +16,10 @@ module Pod
           ['--library',   'Generate static libraries.'],
           ['--dynamic',   'Generate dynamic framework.'],
           ['--exclude-deps', 'Exclude symbols from dependencies.'],
-          ['--configuration',    'Build the specified configuration (e.g. Debug). Defaults to Release'],
-          ['--subspecs',  'Only include the given subspecs'],
+          ['--configuration', 'Build the specified configuration (e.g. Debug). Defaults to Release'],
+          ['--subspecs', 'Only include the given subspecs'],
           ['--spec-sources=private,https://github.com/CocoaPods/Specs.git', 'The sources to pull dependant ' \
-            'pods from (defaults to https://github.com/CocoaPods/Specs.git)'],
+            'pods from (defaults to https://github.com/CocoaPods/Specs.git)']
         ]
       end
 
@@ -48,8 +48,8 @@ module Pod
       def validate!
         super
         help! 'A podspec name or path is required.' unless @spec
-        help! 'podspec has binary-only depedencies, mangling not possible.' if @mangle and binary_only? @spec
-        help! '--exclude-deps option can only be used for static libraries' if @exclude_deps and @dynamic
+        help! 'podspec has binary-only depedencies, mangling not possible.' if @mangle && binary_only?(@spec)
+        help! '--exclude-deps option can only be used for static libraries' if @exclude_deps && @dynamic
       end
 
       def run
@@ -66,11 +66,11 @@ module Pod
         Dir.chdir(@source_dir)
       end
 
-      :private
+      private
 
       def build_in_sandbox(platform)
+        config.installation_root  = Pathname.new(Dir.pwd)
         config.sandbox_root       = 'Pods'
-        config.integrate_targets  = false
 
         static_sandbox = build_static_sandbox(@dynamic)
         static_installer = install_pod(platform.name, static_sandbox)
@@ -129,7 +129,7 @@ module Pod
       end
 
       def perform_build(platform, static_sandbox, dynamic_sandbox)
-        static_sandbox_root = "#{config.sandbox_root}"
+        static_sandbox_root = config.sandbox_root.to_s
 
         if @dynamic
           static_sandbox_root = "#{static_sandbox_root}/#{static_sandbox.root.to_s.split('/').last}"
@@ -146,7 +146,8 @@ module Pod
           @mangle,
           @dynamic,
           @config,
-          @exclude_deps)
+          @exclude_deps
+        )
 
         builder.build(platform, @library)
 

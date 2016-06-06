@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.license      = {:type => 'MIT', :file => 'LICENSE'}
   s.authors      = { 'Boris Bügling' => 'http://buegling.com' }
   s.source       = { :git => 'https://github.com/neonichu/NikeKit.git', :tag => s.version.to_s }
-  s.platform     = :ios, '6.0'
+  s.platform     = :ios, '8.0'
   
   s.public_header_files = '*.h'
   s.source_files = '*.{h,m}'

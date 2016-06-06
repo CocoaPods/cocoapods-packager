@@ -40,14 +40,14 @@ module Pod
 
       if @dynamic
         build_dynamic_framework(platform, defines, "#{@dynamic_sandbox_root}/build/#{@spec.name}.framework/#{@spec.name}")
-        copy_resources(platform)
       else
         create_framework(platform.name.to_s)
         build_library(platform, defines, @fwk.versions_path + Pathname.new(@spec.name))
         copy_headers
         copy_license
-        copy_resources(platform)
       end
+
+      copy_resources(platform)
     end
 
     def link_embedded_resources
@@ -60,7 +60,7 @@ module Pod
       end
     end
 
-    :private
+    private
 
     def build_dynamic_framework(platform, defines, output)
       UI.puts("Building dynamic Framework #{@spec} with configuration #{@config}")
@@ -90,29 +90,29 @@ module Pod
 
       # Build Target Dynamic Framework for both device and Simulator
       device_defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build\""
-      device_options = ios_build_options << " -sdk iphoneos"
-      xcodebuild(device_defines, device_options, 'build', "#{@spec.name}", "#{@dynamic_sandbox_root}")
+      device_options = ios_build_options << ' -sdk iphoneos'
+      xcodebuild(device_defines, device_options, 'build', @spec.name.to_s, @dynamic_sandbox_root.to_s)
 
       sim_defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build-sim\" ONLY_ACTIVE_ARCH=NO"
-      xcodebuild(sim_defines, '-sdk iphonesimulator', 'build-sim', "#{@spec.name}", "#{@dynamic_sandbox_root}")
+      xcodebuild(sim_defines, '-sdk iphonesimulator', 'build-sim', @spec.name.to_s, @dynamic_sandbox_root.to_s)
 
       # Combine architectures
       `lipo #{@dynamic_sandbox_root}/build/#{@spec.name}.framework/#{@spec.name} #{@dynamic_sandbox_root}/build-sim/#{@spec.name}.framework/#{@spec.name} -create -output #{output}`
 
-      FileUtils.mkdir("#{platform.name}")
+      FileUtils.mkdir(platform.name.to_s)
       `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{platform.name}`
     end
 
-    def build_dynamic_framework_for_mac(platform, defines, output)
+    def build_dynamic_framework_for_mac(platform, defines, _output)
       # Specify frameworks to link and search paths
       linker_flags = static_linker_flags_in_sandbox
       defines = "#{defines} OTHER_LDFLAGS=\"#{linker_flags.join(' ')}\""
 
       # Build Target Dynamic Framework for osx
       defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build\""
-      xcodebuild(defines, nil, 'build', "#{@spec.name}", "#{@dynamic_sandbox_root}")
+      xcodebuild(defines, nil, 'build', @spec.name.to_s, @dynamic_sandbox_root.to_s)
 
-      FileUtils.mkdir("#{platform.name}")
+      FileUtils.mkdir(platform.name.to_s)
       `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{platform.name}`
     end
 
@@ -122,7 +122,7 @@ module Pod
       end
     end
 
-    def build_static_lib_for_ios(static_libs, defines, output)
+    def build_static_lib_for_ios(static_libs, _defines, output)
       return if static_libs.count == 0
       `libtool -static -o #{@static_sandbox_root}/build/package.a #{static_libs.join(' ')}`
 
@@ -140,7 +140,7 @@ module Pod
     def build_with_mangling(platform, options)
       UI.puts 'Mangling symbols'
       defines = Symbols.mangle_for_pod_dependencies(@spec.name, @static_sandbox_root)
-      defines << " " << @spec.consumer(platform).compiler_flags.join(' ')
+      defines << ' ' << @spec.consumer(platform).compiler_flags.join(' ')
 
       UI.puts 'Building mangled framework'
       xcodebuild(defines, options)
@@ -153,12 +153,12 @@ module Pod
       FileUtils.rm_rf("#{@static_sandbox_root}/Headers/Private/#{@spec.name}")
 
       # Equivalent to removing derrived data
-      FileUtils.rm_rf("Pods/build")
+      FileUtils.rm_rf('Pods/build')
     end
 
     def compile(platform)
       defines = "GCC_PREPROCESSOR_DEFINITIONS='$(inherited) PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{@spec.name}'"
-      defines << " " << @spec.consumer(platform).compiler_flags.join(' ')
+      defines << ' ' << @spec.consumer(platform).compiler_flags.join(' ')
 
       if platform.name == :ios
         options = ios_build_options
@@ -177,7 +177,7 @@ module Pod
       headers_source_root = "#{@public_headers_root}/#{@spec.name}"
 
       Dir.glob("#{headers_source_root}/**/*.h").
-          each { |h| `ditto #{h} #{@fwk.headers_path}/#{h.sub(headers_source_root, '')}` }
+        each { |h| `ditto #{h} #{@fwk.headers_path}/#{h.sub(headers_source_root, '')}` }
 
       # If custom 'module_map' is specified add it to the framework distribution
       # otherwise check if a header exists that is equal to 'spec.name', if so
@@ -257,19 +257,18 @@ MAP
 
     def static_linker_flags_in_sandbox
       linker_flags = static_libs_in_sandbox.map do |lib|
-        lib.slice!("lib")
-        lib_flag = lib.chomp(".a").split("/").last
+        lib.slice!('lib')
+        lib_flag = lib.chomp('.a').split('/').last
         "-l#{lib_flag}"
       end
-      linker_flags.reject { |e| e == "-l#{@spec.name}"|| e == "-lPods" }
+      linker_flags.reject { |e| e == "-l#{@spec.name}" || e == '-lPods-packager' }
     end
 
     def ios_build_options
-      return "ARCHS=\'x86_64 i386 arm64 armv7 armv7s\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\'"
+      "ARCHS=\'x86_64 i386 arm64 armv7 armv7s\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\'"
     end
 
-    def xcodebuild(defines = '', args = '', build_dir = 'build', target = 'Pods', project_root = @static_sandbox_root, config = @config)
-
+    def xcodebuild(defines = '', args = '', build_dir = 'build', target = 'Pods-packager', project_root = @static_sandbox_root, config = @config)
       if defined?(Pod::DONT_CODESIGN)
         args = "#{args} CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO"
       end

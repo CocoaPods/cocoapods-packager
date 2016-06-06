@@ -6,8 +6,9 @@
 //  Copyright (c) 2014 Shape A/S. All rights reserved.
 //
 
+#import <LibraryDemo/MyDemoClass.h>
+
 #import "AppDelegate.h"
-#import "MyDemoClass.h"
 
 @interface AppDelegate ()
 

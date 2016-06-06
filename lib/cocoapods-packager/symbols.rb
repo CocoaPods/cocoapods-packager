@@ -2,14 +2,14 @@ module Symbols
   def symbols_from_library(library)
     syms = `nm -gU #{library}`.split("\n")
     result = classes_from_symbols(syms)
-    result = result + constants_from_symbols(syms)
+    result += constants_from_symbols(syms)
 
-    result.reject { |e| e == "llvm.cmdline" || e == "llvm.embedded.module" }
+    result.reject { |e| e == 'llvm.cmdline' || e == 'llvm.embedded.module' }
   end
 
   module_function :symbols_from_library
 
-  :private
+  private
 
   def classes_from_symbols(syms)
     classes = syms.select { |klass| klass[/OBJC_CLASS_\$_/] }

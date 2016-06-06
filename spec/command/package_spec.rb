@@ -26,7 +26,7 @@ module Pod
       end
 
       it "errors if it cannot find a spec" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package KFData })
         should.raise CLAide::Help do
@@ -36,7 +36,7 @@ module Pod
 
 
       it "should produce a dynamic library when dynamic is specified" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
         command.run
@@ -50,7 +50,7 @@ module Pod
       end
 
       it "should link category symbols when dynamic is specified" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
         command.run
@@ -64,7 +64,7 @@ module Pod
       end
 
       it "should produce a dynamic library for OSX when dynamic is specified" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/KFData.podspec --dynamic })
         command.run
@@ -77,7 +77,7 @@ module Pod
       end
 
       it "should produce a static library when dynamic is not specified" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
         command.run
@@ -91,7 +91,7 @@ module Pod
       end
 
       it "mangles symbols if the Pod has dependencies" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
         command.run
@@ -104,7 +104,7 @@ module Pod
       end
 
       it "mangles symbols if the Pod has dependencies and framework is dynamic" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
         command.run
@@ -117,7 +117,7 @@ module Pod
       end
 
       it "mangles symbols if the Pod has dependencies regardless of name" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/a.podspec })
         command.run
@@ -129,7 +129,7 @@ module Pod
       end
 
       it "does not mangle symbols if option --no-mangle is specified" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --no-mangle })
         command.run
@@ -140,7 +140,7 @@ module Pod
       end
 
       it "does not mangle symbols if option --no-mangle and --dynamic are specified" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --no-mangle --dynamic })
         command.run
@@ -151,7 +151,7 @@ module Pod
       end
 
       it "does not include symbols from dependencies if option --exclude-deps is specified" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --exclude-deps })
         command.run
@@ -162,7 +162,7 @@ module Pod
       end
 
       it "includes the correct architectures when packaging an iOS Pod" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
         command.run
@@ -173,7 +173,7 @@ module Pod
       end
 
       it "includes the correct architectures when packaging an iOS Pod as --dynamic" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
         command.run
@@ -184,7 +184,7 @@ module Pod
       end
 
       it "includes Bitcode for device arch slices when packaging an iOS Pod" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
         command.run
@@ -199,7 +199,7 @@ module Pod
       end
 
       it "includes Bitcode for device arch slices when packaging an dynamic iOS Pod" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
         command.run
@@ -214,7 +214,7 @@ module Pod
       end
 
       it "does not include Bitcode for simulator arch slices when packaging an iOS Pod" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
         command.run
@@ -228,7 +228,7 @@ module Pod
       end
 
       it "does not include Bitcode for simulator arch slices when packaging an dynamic iOS Pod" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
         command.run
@@ -242,7 +242,7 @@ module Pod
       end
 
       it "does not include local ModuleCache references" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
         command.run
@@ -254,7 +254,7 @@ module Pod
       end
 
       it "does not fail when the pod name contains a dash" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/foo-bar.podspec })
         command.run
@@ -263,7 +263,7 @@ module Pod
       end
 
       it "runs with a path to a spec" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/KFData.podspec })
         command.run
@@ -272,7 +272,7 @@ module Pod
       end
 
       it "it respects module_map directive" do
-        SourcesManager.stubs(:search).returns(nil)
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/FH.podspec })
         command.run

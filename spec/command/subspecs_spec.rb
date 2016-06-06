@@ -8,7 +8,7 @@ module Pod
       end
 
       it 'can package a single subspec' do
-      	SourcesManager.stubs(:search).returns(nil)
+      	Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/KFData.podspec --subspecs=Core})
         command.run
@@ -17,7 +17,7 @@ module Pod
       end
 
       it 'can package a list of subspecs' do
-      	SourcesManager.stubs(:search).returns(nil)
+      	Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package spec/fixtures/KFData.podspec --subspecs=Core,Compatibility})
         command.run
