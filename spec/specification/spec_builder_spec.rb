@@ -32,6 +32,11 @@ module Pod
         compare_attributes(spec, @spec, 'frameworks')
       end
 
+      it "preserves platform.weak_frameworks" do
+        spec = specification_from_builder(@builder)
+        compare_attributes(spec, @spec, 'weak_frameworks')
+      end
+
       it "preserves platform.libraries" do
         spec = specification_from_builder(@builder)
         compare_attributes(spec, @spec, 'libraries')
