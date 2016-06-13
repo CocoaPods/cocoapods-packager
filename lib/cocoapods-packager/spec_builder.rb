@@ -17,22 +17,12 @@ module Pod
 
     def spec_platform(platform)
       fwk_base = platform.name.to_s + '/' + framework_path
-      spec = if @dynamic
-               <<RB
+      spec = <<RB
   s.#{platform.name}.deployment_target    = '#{platform.deployment_target}'
   s.#{platform.name}.vendored_framework   = '#{fwk_base}'
 RB
-             else
-               <<SPEC
-  s.#{platform.name}.deployment_target    = '#{platform.deployment_target}'
-  s.#{platform.name}.preserve_paths       = '#{fwk_base}'
-  s.#{platform.name}.public_header_files  = '#{fwk_base}/Versions/A/Headers/*.h'
-  s.#{platform.name}.resource             = '#{fwk_base}/Versions/A/Resources/**/*'
-  s.#{platform.name}.vendored_frameworks  = '#{fwk_base}'
-SPEC
-             end
 
-      %w(frameworks libraries requires_arc xcconfig).each do |attribute|
+      %w(frameworks weak_frameworks libraries requires_arc xcconfig).each do |attribute|
         attributes_hash = @spec.attributes_hash[platform.name.to_s]
         next if attributes_hash.nil?
         value = attributes_hash[attribute]
@@ -59,12 +49,11 @@ SPEC
       spec = "Pod::Spec.new do |s|\n"
 
       %w(name version summary license authors homepage description social_media_url
-         docset_url documentation_url screenshots frameworks libraries requires_arc
+         docset_url documentation_url screenshots frameworks weak_frameworks libraries requires_arc
          deployment_target xcconfig).each do |attribute|
         value = @spec.attributes_hash[attribute]
         next if value.nil?
-
-        value = "'#{value}'" if value.class == String
+        value = value.dump if value.class == String
         spec += "  s.#{attribute} = #{value}\n"
       end
 
