@@ -49,6 +49,20 @@ module Pod
         output[1].should.match /Mach-O dynamically linked shared library i386/
       end
 
+      it "should produce a dSYM when dynamic is specified" do
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
+        command.run
+
+        lib = Dir.glob("NikeKit-*/ios/NikeKit.framework.dSYM/Contents/Resources/DWARF/NikeKit").first
+        file_command = "file #{lib}"
+        output = `#{file_command}`.lines.to_a
+
+        output[0].should.match /Mach-O universal binary with 3 architectures/
+        output[1].should.match /Mach-O dSYM companion file arm/
+      end
+
       it "should link category symbols when dynamic is specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
@@ -74,6 +88,19 @@ module Pod
         output = `#{file_command}`.lines.to_a
 
         output[0].should.match /Mach-O 64-bit dynamically linked shared library x86_64/
+      end
+
+      it "should produce a dSYM for OSX when dynamic is specified" do
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/KFData.podspec --dynamic })
+        command.run
+
+        lib = Dir.glob("KFData-*/osx/KFData.framework.dSYM/Contents/Resources/DWARF/KFData").first
+        file_command = "file #{lib}"
+        output = `#{file_command}`.lines.to_a
+
+        output[0].should.match /Mach-O 64-bit dSYM companion file x86_64/
       end
 
       it "should produce a static library when dynamic is not specified" do
