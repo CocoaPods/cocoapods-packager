@@ -101,6 +101,7 @@ module Pod
 
       FileUtils.mkdir(platform.name.to_s)
       `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{platform.name}`
+      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework.dSYM #{platform.name}`
     end
 
     def build_dynamic_framework_for_mac(platform, defines, _output)
@@ -114,6 +115,7 @@ module Pod
 
       FileUtils.mkdir(platform.name.to_s)
       `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{platform.name}`
+      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework.dSYM #{platform.name}`
     end
 
     def build_sim_libraries(platform, defines)
