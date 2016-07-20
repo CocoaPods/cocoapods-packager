@@ -103,6 +103,38 @@ module Pod
         output[0].should.match /Mach-O 64-bit dSYM companion file x86_64/
       end
 
+      it "should produce the default plist for iOS and OSX when --dynamic is specified but --bundle-identifier is not" do
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/KFData.podspec --dynamic})
+        command.run
+
+        ios_plist = File.expand_path(Dir.glob("KFData-*/ios/KFData.framework/Info.plist").first)
+        osx_plist = File.expand_path(Dir.glob("KFData-*/osx/KFData.framework/Resources/Info.plist").first)
+
+        ios_bundle_id = `defaults read #{ios_plist} CFBundleIdentifier`
+        osx_bundle_id = `defaults read #{osx_plist} CFBundleIdentifier`
+
+        ios_bundle_id.should.match /org.cocoapods.KFData/
+        osx_bundle_id.should.match /org.cocoapods.KFData/
+      end
+
+      it "should produce the correct plist for iOS and OSX when --dynamic and --bundle-identifier are specified" do
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/KFData.podspec --dynamic --bundle-identifier=com.example.KFData})
+        command.run
+
+        ios_plist = File.expand_path(Dir.glob("KFData-*/ios/KFData.framework/Info.plist").first)
+        osx_plist = File.expand_path(Dir.glob("KFData-*/osx/KFData.framework/Resources/Info.plist").first)
+
+        ios_bundle_id = `defaults read #{ios_plist} CFBundleIdentifier`
+        osx_bundle_id = `defaults read #{osx_plist} CFBundleIdentifier`
+
+        ios_bundle_id.should.match /com.example.KFData/
+        osx_bundle_id.should.match /com.example.KFData/
+      end
+
       it "should produce a static library when dynamic is not specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 

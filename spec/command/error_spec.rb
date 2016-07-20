@@ -28,6 +28,13 @@ module Pod
       end.message.should.match /binary-only/
     end
 
+    it 'presents the help if only --bundle-identifier is specified' do
+      command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --bundle-identifier=com.example.NikeKit })
+      should.raise CLAide::Help do
+        command.validate!
+      end.message.should.match /--bundle-identifier option can only be used for dynamic frameworks/
+    end
+
     it 'presents the help if both --exclude-deps and --dynamic are specified' do
       command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --exclude-deps --dynamic })
       should.raise CLAide::Help do

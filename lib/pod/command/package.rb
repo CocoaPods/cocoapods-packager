@@ -15,6 +15,7 @@ module Pod
           ['--embedded',  'Generate embedded frameworks.'],
           ['--library',   'Generate static libraries.'],
           ['--dynamic',   'Generate dynamic framework.'],
+          ['--bundle-identifier', 'Bundle identifier for dynamic framework'],
           ['--exclude-deps', 'Exclude symbols from dependencies.'],
           ['--configuration', 'Build the specified configuration (e.g. Debug). Defaults to Release'],
           ['--subspecs', 'Only include the given subspecs'],
@@ -29,6 +30,7 @@ module Pod
         @library = argv.flag?('library')
         @dynamic = argv.flag?('dynamic')
         @mangle = argv.flag?('mangle', true)
+        @bundle_identifier = argv.option('bundle-identifier', nil)
         @exclude_deps = argv.flag?('exclude-deps', false)
         @name = argv.shift_argument
         @source = argv.shift_argument
@@ -49,6 +51,7 @@ module Pod
         super
         help! 'A podspec name or path is required.' unless @spec
         help! 'podspec has binary-only depedencies, mangling not possible.' if @mangle && binary_only?(@spec)
+        help! '--bundle-identifier option can only be used for dynamic frameworks' if @bundle_identifier && !@dynamic
         help! '--exclude-deps option can only be used for static libraries' if @exclude_deps && @dynamic
       end
 
@@ -146,6 +149,7 @@ module Pod
           @mangle,
           @dynamic,
           @config,
+          @bundle_identifier,
           @exclude_deps
         )
 
