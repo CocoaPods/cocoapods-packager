@@ -1,6 +1,6 @@
 module Pod
   class Builder
-    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config, exclude_deps)
+    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps)
       @source_dir = source_dir
       @static_sandbox_root = static_sandbox_root
       @dynamic_sandbox_root = dynamic_sandbox_root
@@ -10,6 +10,7 @@ module Pod
       @mangle = mangle
       @dynamic = dynamic
       @config = config
+      @bundle_identifier = bundle_identifier
       @exclude_deps = exclude_deps
     end
 
@@ -64,6 +65,10 @@ module Pod
 
     def build_dynamic_framework(platform, defines, output)
       UI.puts("Building dynamic Framework #{@spec} with configuration #{@config}")
+
+      if @bundle_identifier
+        defines = "#{defines} PRODUCT_BUNDLE_IDENTIFIER='#{@bundle_identifier}'"
+      end
 
       clean_directory_for_dynamic_build
       if platform.name == :ios
