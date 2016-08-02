@@ -1,11 +1,12 @@
 module Pod
   class Builder
-    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps)
+    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, subspecs, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps)
       @source_dir = source_dir
       @static_sandbox_root = static_sandbox_root
       @dynamic_sandbox_root = dynamic_sandbox_root
       @public_headers_root = public_headers_root
       @spec = spec
+      @subspecs = subspecs
       @embedded = embedded
       @mangle = mangle
       @dynamic = dynamic
@@ -143,12 +144,10 @@ module Pod
       return if static_libs.count == 0
       `libtool -static -o #{output} #{static_libs.join(' ')}`
     end
-
     def build_with_mangling(platform, options)
       UI.puts 'Mangling symbols'
       defines = Symbols.mangle_for_pod_dependencies(@spec.name, @static_sandbox_root)
       defines << ' ' << @spec.consumer(platform).compiler_flags.join(' ')
-
       UI.puts 'Building mangled framework'
       xcodebuild(defines, options)
       defines
@@ -164,7 +163,13 @@ module Pod
     end
 
     def compile(platform)
-      defines = "GCC_PREPROCESSOR_DEFINITIONS='$(inherited) PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{@spec.name}'"
+      spec_name = @spec.name
+      if @subspecs.count > 0
+        spec_name += @subspecs.join('_')
+      end
+
+      defines = "GCC_PREPROCESSOR_DEFINITIONS='$(inherited) PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{spec_name}'"
+      
       defines << ' ' << @spec.consumer(platform).compiler_flags.join(' ')
 
       if platform.name == :ios
