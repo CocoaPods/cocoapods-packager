@@ -1,6 +1,6 @@
 module Pod
   class Builder
-    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps)
+    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config, exclude_deps)
       @source_dir = source_dir
       @static_sandbox_root = static_sandbox_root
       @dynamic_sandbox_root = dynamic_sandbox_root
@@ -73,6 +73,8 @@ module Pod
       clean_directory_for_dynamic_build
       if platform.name == :ios
         build_dynamic_framework_for_ios(platform, defines, output)
+      elsif platform.name == :tvos
+        build_dynamic_framework_for_tvos(platform, defines, output)
       else
         build_dynamic_framework_for_mac(platform, defines, output)
       end
@@ -109,6 +111,27 @@ module Pod
       `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework.dSYM #{platform.name}`
     end
 
+    def build_dynamic_framework_for_tvos(platform, defines, output)
+      # Specify frameworks to link and search paths
+      linker_flags = static_linker_flags_in_sandbox
+      defines = "#{defines} OTHER_LDFLAGS='$(inherited) #{linker_flags.join(' ')}'"
+
+      # Build Target Dynamic Framework for both device and Simulator
+      device_defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build\""
+      device_options = tvos_build_options << ' -sdk appletvos'
+      xcodebuild(device_defines, device_options, 'build', @spec.name.to_s, @dynamic_sandbox_root.to_s)
+
+      sim_defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build-sim\" ONLY_ACTIVE_ARCH=NO"
+      xcodebuild(sim_defines, '-sdk appletvsimulator', 'build-sim', @spec.name.to_s, @dynamic_sandbox_root.to_s)
+
+      # Combine architectures
+      `lipo #{@dynamic_sandbox_root}/build/#{@spec.name}.framework/#{@spec.name} #{@dynamic_sandbox_root}/build-sim/#{@spec.name}.framework/#{@spec.name} -create -output #{output}`
+
+      FileUtils.mkdir(platform.name.to_s)
+      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{platform.name}`
+      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework.dSYM #{platform.name}`
+    end
+
     def build_dynamic_framework_for_mac(platform, defines, _output)
       # Specify frameworks to link and search paths
       linker_flags = static_linker_flags_in_sandbox
@@ -126,6 +149,8 @@ module Pod
     def build_sim_libraries(platform, defines)
       if platform.name == :ios
         xcodebuild(defines, '-sdk iphonesimulator', 'build-sim')
+      elsif platform.name == :tvos
+        xcodebuild(defines, '-sdk appletvsimulator', 'build-sim')
       end
     end
 
@@ -169,6 +194,8 @@ module Pod
 
       if platform.name == :ios
         options = ios_build_options
+      elsif platform == :tvos
+        options = tvos_build_options
       end
 
       xcodebuild(defines, options)
@@ -273,6 +300,10 @@ MAP
 
     def ios_build_options
       "ARCHS=\'x86_64 i386 arm64 armv7 armv7s\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\'"
+    end
+
+    def tvos_build_options
+      "ARCHS=\'x86_64 arm64\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\'"
     end
 
     def xcodebuild(defines = '', args = '', build_dir = 'build', target = 'Pods-packager', project_root = @static_sandbox_root, config = @config)
