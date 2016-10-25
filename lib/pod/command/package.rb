@@ -145,6 +145,7 @@ module Pod
           dynamic_sandbox_root,
           static_sandbox.public_headers.root,
           @spec,
+          @subspecs,
           @embedded,
           @mangle,
           @dynamic,
