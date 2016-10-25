@@ -206,13 +206,13 @@ module Pod
       end
 
       def install_file_references(dynamic_sandbox, pod_targets, pods_project)
-        installer = Pod::Installer::FileReferencesInstaller.new(dynamic_sandbox, pod_targets, pods_project)
+        installer = Pod::Installer::Xcode::PodsProjectGenerator::FileReferencesInstaller.new(dynamic_sandbox, pod_targets, pods_project)
         installer.install!
       end
 
       def install_library(dynamic_sandbox, dynamic_target)
         return if dynamic_target.target_definitions.flat_map(&:dependencies).empty?
-        target_installer = Pod::Installer::PodTargetInstaller.new(dynamic_sandbox, dynamic_target)
+        target_installer = Pod::Installer::Xcode::PodsProjectGenerator::PodTargetInstaller.new(dynamic_sandbox, dynamic_target)
         target_installer.install!
 
         # Installs System Frameworks

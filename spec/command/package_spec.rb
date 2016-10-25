@@ -146,7 +146,7 @@ module Pod
         output = `#{file_command}`.lines.to_a
 
         output[0].should.match /Mach-O universal binary with 5 architectures/
-        output[1].should.match /current ar archive random library/
+        output[1].should.match /current ar archive/
       end
 
       it "mangles symbols if the Pod has dependencies" do
