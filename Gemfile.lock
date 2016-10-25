@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     cocoapods-packager (1.4.0)
-      cocoapods (>= 1.0.0, < 2.0)
+      cocoapods (>= 1.1.1, < 2.0)
 
 GEM
   remote: https://rubygems.org/
