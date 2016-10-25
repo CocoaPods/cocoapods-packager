@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    cocoapods-packager (1.4.0)
+    cocoapods-packager (1.5.0)
       cocoapods (>= 1.1.1, < 2.0)
 
 GEM
