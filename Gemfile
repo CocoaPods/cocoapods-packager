@@ -9,6 +9,4 @@ group :development do
   gem 'prettybacon'
   gem 'coveralls', :require => false
   gem 'rubocop'
-
-  gem 'cocoapods', '1.1.0.beta.1'
 end
