@@ -240,6 +240,7 @@ module Pod
 
           # Edit search paths so that we can find our dependency headers
           dynamic_project.targets.first.build_configuration_list.build_configurations.each do |config|
+            config.build_settings['FRAMEWORK_SEARCH_PATHS'] = "$(inherited) #{Dir.pwd}/Pods/Static/**"
             config.build_settings['HEADER_SEARCH_PATHS'] = "$(inherited) #{Dir.pwd}/Pods/Static/Headers/**"
             config.build_settings['USER_HEADER_SEARCH_PATHS'] = "$(inherited) #{Dir.pwd}/Pods/Static/Headers/**"
             config.build_settings['OTHER_LDFLAGS'] = '$(inherited) -ObjC'
