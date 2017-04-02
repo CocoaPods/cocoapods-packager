@@ -15,6 +15,7 @@ module Pod
           ['--embedded',  'Generate embedded frameworks.'],
           ['--library',   'Generate static libraries.'],
           ['--dynamic',   'Generate dynamic framework.'],
+          ['--local-source',     'Generate use local source file.'],
           ['--bundle-identifier', 'Bundle identifier for dynamic framework'],
           ['--exclude-deps', 'Exclude symbols from dependencies.'],
           ['--configuration', 'Build the specified configuration (e.g. Debug). Defaults to Release'],
@@ -29,6 +30,7 @@ module Pod
         @force = argv.flag?('force')
         @library = argv.flag?('library')
         @dynamic = argv.flag?('dynamic')
+        @local_source = argv.flag?('local-source')
         @mangle = argv.flag?('mangle', true)
         @bundle_identifier = argv.option('bundle-identifier', nil)
         @exclude_deps = argv.flag?('exclude-deps', false)
@@ -125,9 +127,16 @@ module Pod
 
         work_dir = Dir.tmpdir + '/cocoapods-' + Array.new(8) { rand(36).to_s(36) }.join
         Pathname.new(work_dir).mkdir
-        `cp #{@path} #{work_dir}`
-        Dir.chdir(work_dir)
+        if @local_source
+          full_path = Pathname.new(@path)
 
+          `cp -r #{full_path.parent} #{work_dir}`
+          UI.puts "copy #{full_path.parent} to #{work_dir}"
+        else
+          `cp #{@path} #{work_dir}`
+        end
+        
+        Dir.chdir(work_dir)
         [target_dir, work_dir]
       end
 

@@ -39,13 +39,20 @@ module Pod
       end
 
       def podfile_from_spec(path, spec_name, platform_name, deployment_target, subspecs, sources)
+        
         options = {}
         if path
-          options[:podspec] = path
+          if @local_source
+            options[:path] = path
+          else 
+            options[:podspec] = path
+          end
+          
         else
           options[:path] = '.'
         end
         options[:subspecs] = subspecs if subspecs
+        is_use_localsource = @local_source
         Pod::Podfile.new do
           sources.each { |s| source s }
           platform(platform_name, deployment_target)
@@ -59,10 +66,18 @@ module Pod
             if path
               if subspecs
                 subspecs.each do |subspec|
-                  pod spec_name + '/' + subspec, :podspec => path
+                   if is_use_localsource
+                    pod spec_name + '/' + subspec, :path => path
+                   else
+                      pod spec_name + '/' + subspec, :podspec => path
+                   end
                 end
               else
-                pod spec_name, :podspec => path
+                 if is_use_localsource
+                  pod spec_name, :path => path
+                 else
+                    pod spec_name, :podspec => path
+                 end
               end
             elsif subspecs
               subspecs.each do |subspec|
