@@ -147,7 +147,7 @@ module Pod
     def build_with_mangling(platform, options)
       UI.puts 'Mangling symbols'
       defines = Symbols.mangle_for_pod_dependencies(@spec.name, @static_sandbox_root)
-      defines << ' ' << @spec.consumer(platform).compiler_flags.join(' ')
+      defines << " OTHER_CFLAGS='"  << @spec.consumer(platform).compiler_flags.join(' ') << "'"
 
       UI.puts 'Building mangled framework'
       xcodebuild(defines, options)
@@ -165,7 +165,7 @@ module Pod
 
     def compile(platform)
       defines = "GCC_PREPROCESSOR_DEFINITIONS='$(inherited) PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{@spec.name}'"
-      defines << ' ' << @spec.consumer(platform).compiler_flags.join(' ')
+      defines << " OTHER_CFLAGS='"  << @spec.consumer(platform).compiler_flags.join(' ') << "'"
 
       if platform.name == :ios
         options = ios_build_options
