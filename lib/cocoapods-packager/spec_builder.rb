@@ -43,6 +43,25 @@ RB
       "end\n"
     end
 
+    def spec_dependenies(excludedeps)
+      dependencies = ""
+      if excludedeps
+        @spec.dependencies.each do |dep|
+          dependency = ""
+          if dep.name != nil && dep.name.class == String
+            dependency += %Q(  s.dependency "#{dep.name}")
+            if dep.requirement != nil
+              dependency += %Q(, "#{dep.requirement}")
+            end
+          end
+          dependency += "\n"
+          dependencies += dependency
+        end
+      end
+
+      dependencies
+    end
+
     private
 
     def spec_header
