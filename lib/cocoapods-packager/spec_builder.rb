@@ -47,13 +47,13 @@ RB
       dependencies = %(  # Dependencies\n)
       if excludedeps
         @spec.dependencies.each do |dep|
-          if !dep.name.nil? && dep.name.class == String
+          next if dep.name.nil? || dep.name.class != String
+          dependencies +=
             if !dep.requirement.nil?
-              dependencies += %(  s.dependency "#{dep.name}", "#{dep.requirement}"\n)
+              %(  s.dependency "#{dep.name}", "#{dep.requirement}"\n)
             else
-              dependencies += %(  s.dependency "#{dep.name}"\n)
+              %(  s.dependency "#{dep.name}"\n)
             end
-          end
         end
       end
 
