@@ -14,7 +14,7 @@ module Pod
 
       def install_pod(platform_name, sandbox)
         podfile = podfile_from_spec(
-          File.basename(@path),
+          @path.to_s,
           @spec.name,
           platform_name,
           @spec.deployment_target(platform_name),
@@ -41,7 +41,7 @@ module Pod
       def podfile_from_spec(path, spec_name, platform_name, deployment_target, subspecs, sources)
         options = {}
         if path
-          options[:podspec] = path
+          options[:path] = path
         else
           options[:path] = '.'
         end
@@ -59,10 +59,10 @@ module Pod
             if path
               if subspecs
                 subspecs.each do |subspec|
-                  pod spec_name + '/' + subspec, :podspec => path
+                  pod spec_name + '/' + subspec, :path => path
                 end
               else
-                pod spec_name, :podspec => path
+                pod spec_name, :path => path
               end
             elsif subspecs
               subspecs.each do |subspec|
@@ -100,19 +100,19 @@ module Pod
       def spec_with_path(path)
         return if path.nil? || !Pathname.new(path).exist?
 
-        @path = path
+        @path = Pathname.new(path).expand_path
 
-        if Pathname.new(path).directory?
-          help! path + ': is a directory.'
+        if @path.directory?
+          help! @path + ': is a directory.'
           return
         end
 
-        unless ['.podspec', '.json'].include? Pathname.new(path).extname
-          help! path + ': is not a podspec.'
+        unless ['.podspec', '.json'].include? @path.extname
+          help! @path + ': is not a podspec.'
           return
         end
 
-        Specification.from_file(path)
+        Specification.from_file(@path)
       end
 
       #----------------------

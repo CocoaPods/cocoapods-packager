@@ -125,7 +125,6 @@ module Pod
 
         work_dir = Dir.tmpdir + '/cocoapods-' + Array.new(8) { rand(36).to_s(36) }.join
         Pathname.new(work_dir).mkdir
-        `cp #{@path} #{work_dir}`
         Dir.chdir(work_dir)
 
         [target_dir, work_dir]
