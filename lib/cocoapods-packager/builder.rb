@@ -99,7 +99,8 @@ module Pod
       xcodebuild(device_defines, device_options, 'build', @spec.name.to_s, @dynamic_sandbox_root.to_s)
 
       sim_defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build-sim\" ONLY_ACTIVE_ARCH=NO"
-      xcodebuild(sim_defines, '-sdk iphonesimulator', 'build-sim', @spec.name.to_s, @dynamic_sandbox_root.to_s)
+      options = ios_build_options_sim << ' -sdk iphonesimulator'
+      xcodebuild(sim_defines, options, 'build-sim', @spec.name.to_s, @dynamic_sandbox_root.to_s)
 
       # Combine architectures
       `lipo #{@dynamic_sandbox_root}/build/#{@spec.name}.framework/#{@spec.name} #{@dynamic_sandbox_root}/build-sim/#{@spec.name}.framework/#{@spec.name} -create -output #{output}`
@@ -125,7 +126,8 @@ module Pod
 
     def build_sim_libraries(platform, defines)
       if platform.name == :ios
-        xcodebuild(defines, '-sdk iphonesimulator', 'build-sim')
+        options = ios_build_options_sim << ' -sdk iphonesimulator'
+        xcodebuild(defines, options, 'build-sim')
       end
     end
 
@@ -168,7 +170,7 @@ module Pod
       defines << ' ' << @spec.consumer(platform).compiler_flags.join(' ')
 
       if platform.name == :ios
-        options = ios_build_options
+        options = ios_build_options  << ' -sdk iphoneos'
       end
 
       xcodebuild(defines, options)
@@ -272,7 +274,11 @@ MAP
     end
 
     def ios_build_options
-      "ARCHS=\'x86_64 i386 arm64 armv7 armv7s\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\'"
+      "ARCHS=\'arm64 armv7 armv7s\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\' ONLY_ACTIVE_ARCH=NO"
+    end
+
+    def ios_build_options_sim
+      "ARCHS=\'x86_64 i386\' ONLY_ACTIVE_ARCH=NO"
     end
 
     def xcodebuild(defines = '', args = '', build_dir = 'build', target = 'Pods-packager', project_root = @static_sandbox_root, config = @config)
