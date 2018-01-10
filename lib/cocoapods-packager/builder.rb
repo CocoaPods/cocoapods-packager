@@ -98,7 +98,7 @@ module Pod
       device_options = ios_build_options << ' -sdk iphoneos'
       xcodebuild(device_defines, device_options, 'build', @spec.name.to_s, @dynamic_sandbox_root.to_s)
 
-      sim_defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build-sim\" ONLY_ACTIVE_ARCH=NO"
+      sim_defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build-sim\""
       options = ios_build_options_sim << ' -sdk iphonesimulator'
       xcodebuild(sim_defines, options, 'build-sim', @spec.name.to_s, @dynamic_sandbox_root.to_s)
 
@@ -170,7 +170,7 @@ module Pod
       defines << ' ' << @spec.consumer(platform).compiler_flags.join(' ')
 
       if platform.name == :ios
-        options = ios_build_options  << ' -sdk iphoneos'
+        options = ios_build_options
       end
 
       xcodebuild(defines, options)
@@ -278,7 +278,7 @@ MAP
     end
 
     def ios_build_options_sim
-      "ARCHS=\'x86_64 i386\' ONLY_ACTIVE_ARCH=NO"
+      "ARCHS=\'x86_64 i386\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\' ONLY_ACTIVE_ARCH=NO"
     end
 
     def xcodebuild(defines = '', args = '', build_dir = 'build', target = 'Pods-packager', project_root = @static_sandbox_root, config = @config)
