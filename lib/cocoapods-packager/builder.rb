@@ -313,8 +313,6 @@ MAP
         args = "#{args} CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO"
       end
 
-      UI.puts project_root
-
       command = "xcodebuild #{defines} #{args} CONFIGURATION_BUILD_DIR=#{build_dir} clean build -configuration #{config} -target #{target} -project #{project_root}/Pods.xcodeproj 2>&1"
       output = `#{command}`.lines.to_a
 
