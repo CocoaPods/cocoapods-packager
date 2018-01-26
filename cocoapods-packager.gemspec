@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'cocoapods_packager.rb'
 
 Gem::Specification.new do |spec|
-  spec.name = 'my-cocoapods-packager'
+  spec.name = 'cocoapods-packager'
   spec.version = Pod::Packager::VERSION
   spec.authors = ['Kyle Fuller', 'Boris Bügling']
   spec.summary = 'CocoaPods plugin which allows you to generate a framework or static library from a podspec.'
