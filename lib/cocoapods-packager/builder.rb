@@ -95,8 +95,6 @@ module Pod
 
       linker_flags = lib_linker_flags.push(framework_link_flas)
 
-      puts linker_flags
-
       defines = "#{defines} OTHER_LDFLAGS='$(inherited) #{linker_flags.join(' ')}'"
 
       # Build Target Dynamic Framework for both device and Simulator
@@ -104,9 +102,6 @@ module Pod
       device_defines = "#{device_defines} FRAMEWORK_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/**\""
 
       device_options = ios_build_options << ' -sdk iphoneos'
-
-      puts device_defines
-      puts linker_flags
 
       xcodebuild(device_defines, device_options, 'build', @spec.name.to_s, @dynamic_sandbox_root.to_s)
 
@@ -301,7 +296,6 @@ MAP
     end
 
     def static_linker_flags_in_sandbox
-      puts static_libs_in_sandbox.map
       linker_flags = static_libs_in_sandbox.map do |lib|
         lib.slice!('lib')
         lib_flag = lib.chomp('.a').split('/').last
@@ -322,7 +316,6 @@ MAP
       UI.puts project_root
 
       command = "xcodebuild #{defines} #{args} CONFIGURATION_BUILD_DIR=#{build_dir} clean build -configuration #{config} -target #{target} -project #{project_root}/Pods.xcodeproj 2>&1"
-      puts command
       output = `#{command}`.lines.to_a
 
       if $?.exitstatus != 0
