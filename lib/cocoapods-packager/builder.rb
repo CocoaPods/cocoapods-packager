@@ -90,15 +90,24 @@ module Pod
 
     def build_dynamic_framework_for_ios(platform, defines, output)
       # Specify frameworks to link and search paths
-      linker_flags = static_linker_flags_in_sandbox
+      lib_linker_flags = static_linker_flags_in_sandbox
+      framework_link_flas = framework_linker_flags_in_sandbox
+
+      linker_flags = lib_linker_flags.push(framework_link_flas)
+
       defines = "#{defines} OTHER_LDFLAGS='$(inherited) #{linker_flags.join(' ')}'"
 
       # Build Target Dynamic Framework for both device and Simulator
       device_defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build\""
+      device_defines = "#{device_defines} FRAMEWORK_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/**\""
+
       device_options = ios_build_options << ' -sdk iphoneos'
+
       xcodebuild(device_defines, device_options, 'build', @spec.name.to_s, @dynamic_sandbox_root.to_s)
 
       sim_defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build-sim\" ONLY_ACTIVE_ARCH=NO"
+      sim_defines = "#{sim_defines} FRAMEWORK_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/**\""
+
       xcodebuild(sim_defines, '-sdk iphonesimulator', 'build-sim', @spec.name.to_s, @dynamic_sandbox_root.to_s)
 
       # Combine architectures
@@ -111,11 +120,18 @@ module Pod
 
     def build_dynamic_framework_for_mac(platform, defines, _output)
       # Specify frameworks to link and search paths
-      linker_flags = static_linker_flags_in_sandbox
+      lib_linker_flags = static_linker_flags_in_sandbox
+      framework_link_flas = framework_linker_flags_in_sandbox
+
+      linker_flags = lib_linker_flags.push(framework_link_flas)
+
+
       defines = "#{defines} OTHER_LDFLAGS=\"#{linker_flags.join(' ')}\""
 
       # Build Target Dynamic Framework for osx
       defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build\""
+      device_defines = "#{device_defines} FRAMEWORK_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/**\""
+
       xcodebuild(defines, nil, 'build', @spec.name.to_s, @dynamic_sandbox_root.to_s)
 
       FileUtils.mkdir(platform.name.to_s)
@@ -260,6 +276,23 @@ MAP
       else
         Dir.glob("#{@static_sandbox_root}/#{build_dir}/lib*.a")
       end
+    end
+
+    def framework_in_sandbox(build_dir = 'build')
+      if @exclude_deps
+        UI.puts 'Excluding dependencies'
+        Dir.glob("#{@static_sandbox_root}/**/{@spec.name}.framework")
+      else
+        Dir.glob("#{@static_sandbox_root}/**/*.framework")
+      end
+    end
+
+    def framework_linker_flags_in_sandbox
+      linker_flags = framework_in_sandbox.map do |lib|
+        lib_flag = lib.chomp('.framework').split('/').last
+        "-framework #{lib_flag}"
+      end
+      linker_flags.reject { |e| e == "-framework #{@spec.name}" }
     end
 
     def static_linker_flags_in_sandbox
