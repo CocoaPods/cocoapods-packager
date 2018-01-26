@@ -4,11 +4,11 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'cocoapods_packager.rb'
 
 Gem::Specification.new do |spec|
-  spec.name = 'cocoapods-packager'
+  spec.name = 'my-cocoapods-packager'
   spec.version = Pod::Packager::VERSION
   spec.authors = ['Kyle Fuller', 'Boris Bügling']
   spec.summary = 'CocoaPods plugin which allows you to generate a framework or static library from a podspec.'
-  spec.homepage = 'https://github.com/CocoaPods/cocoapods-packager'
+  spec.homepage = 'https://github.com/silan-liu/cocoapods-packager'
   spec.license = 'MIT'
   spec.files = `git ls-files`.split($/)
   spec.executables = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
