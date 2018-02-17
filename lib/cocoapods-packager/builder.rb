@@ -1,10 +1,9 @@
 module Pod
   class Builder
-    def initialize(source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps)
+    def initialize(source_dir, static_sandbox, dynamic_sandbox, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps, platform)
       @source_dir = source_dir
-      @static_sandbox_root = static_sandbox_root
-      @dynamic_sandbox_root = dynamic_sandbox_root
-      @public_headers_root = public_headers_root
+      @static_sandbox = static_sandbox
+      @dynamic_sandbox = dynamic_sandbox
       @spec = spec
       @embedded = embedded
       @mangle = mangle
@@ -12,43 +11,58 @@ module Pod
       @config = config
       @bundle_identifier = bundle_identifier
       @exclude_deps = exclude_deps
+      @platform = platform
+      @static_sandbox_root = @static_sandbox.root.to_s
+      if @dynamic
+        @static_sandbox_root = "#{@static_sandbox_root}/#{@static_sandbox.root.to_s.split('/').last}"
+        @dynamic_sandbox_root = "#{@config.sandbox_root}/#{@dynamic_sandbox.root.to_s.split('/').last}"
+      end
+
+      @public_headers_root = @static_sandbox.public_headers.root
+
+      pod_root = @static_sandbox.pod_dir(@spec.name)
+      puts pod_root.inspect
+      path_list = Sandbox::PathList.new(pod_root)
+      puts path_list.inspect
+      @file_accessor = Sandbox::FileAccessor.new(path_list, @spec.consumer(@platform))  
+      puts @file_accessor.inspect
     end
 
-    def build(platform, library)
+    def build(library)
       if library
-        build_static_library(platform)
+        build_static_library
       else
-        build_framework(platform)
+        build_framework
       end
     end
 
-    def build_static_library(platform)
+    def build_static_library
       UI.puts("Building static library #{@spec} with configuration #{@config}")
 
-      defines = compile(platform)
-      build_sim_libraries(platform, defines)
+      defines = compile
+      build_sim_libraries(defines)
 
-      platform_path = Pathname.new(platform.name.to_s)
+      platform_path = Pathname.new(@platform.name.to_s)
       platform_path.mkdir unless platform_path.exist?
-      build_library(platform, defines, platform_path + Pathname.new("lib#{@spec.name}.a"))
+      build_library(defines, platform_path + Pathname.new("lib#{@spec.name}.a"))
     end
 
-    def build_framework(platform)
+    def build_framework
       UI.puts("Building framework #{@spec} with configuration #{@config}")
 
-      defines = compile(platform)
-      build_sim_libraries(platform, defines)
+      defines = compile
+      build_sim_libraries(defines)
 
       if @dynamic
-        build_dynamic_framework(platform, defines, "#{@dynamic_sandbox_root}/build/#{@spec.name}.framework/#{@spec.name}")
+        build_dynamic_framework(defines, "#{@dynamic_sandbox_root}/build/#{@spec.name}.framework/#{@spec.name}")
       else
-        create_framework(platform.name.to_s)
-        build_library(platform, defines, @fwk.versions_path + Pathname.new(@spec.name))
+        create_framework
+        build_library(defines, @fwk.versions_path + Pathname.new(@spec.name))
         copy_headers
         copy_license
       end
 
-      copy_resources(platform)
+      copy_resources
     end
 
     def link_embedded_resources
@@ -63,7 +77,7 @@ module Pod
 
     private
 
-    def build_dynamic_framework(platform, defines, output)
+    def build_dynamic_framework(defines, output)
       UI.puts("Building dynamic Framework #{@spec} with configuration #{@config}")
 
       if @bundle_identifier
@@ -71,24 +85,24 @@ module Pod
       end
 
       clean_directory_for_dynamic_build
-      if platform.name == :ios
-        build_dynamic_framework_for_ios(platform, defines, output)
+      if @platform.name == :ios
+        build_dynamic_framework_for_ios(defines, output)
       else
-        build_dynamic_framework_for_mac(platform, defines, output)
+        build_dynamic_framework_for_mac(defines, output)
       end
     end
 
-    def build_library(platform, defines, output)
+    def build_library(defines, output)
       static_libs = static_libs_in_sandbox
 
-      if platform.name == :ios
+      if @platform.name == :ios
         build_static_lib_for_ios(static_libs, defines, output)
       else
         build_static_lib_for_mac(static_libs, output)
       end
     end
 
-    def build_dynamic_framework_for_ios(platform, defines, output)
+    def build_dynamic_framework_for_ios(defines, output)
       # Specify frameworks to link and search paths
       linker_flags = static_linker_flags_in_sandbox
       defines = "#{defines} OTHER_LDFLAGS='$(inherited) #{linker_flags.join(' ')}'"
@@ -104,7 +118,7 @@ module Pod
       # Combine architectures
       `lipo #{@dynamic_sandbox_root}/build/#{@spec.name}.framework/#{@spec.name} #{@dynamic_sandbox_root}/build-sim/#{@spec.name}.framework/#{@spec.name} -create -output #{output}`
 
-      FileUtils.mkdir(platform.name.to_s)
+      FileUtils.mkdir(@platform.name.to_s)
       `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{platform.name}`
       `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework.dSYM #{platform.name}`
     end
@@ -118,13 +132,13 @@ module Pod
       defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build\""
       xcodebuild(defines, nil, 'build', @spec.name.to_s, @dynamic_sandbox_root.to_s)
 
-      FileUtils.mkdir(platform.name.to_s)
+      FileUtils.mkdir(@platform.name.to_s)
       `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{platform.name}`
       `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework.dSYM #{platform.name}`
     end
 
-    def build_sim_libraries(platform, defines)
-      if platform.name == :ios
+    def build_sim_libraries(defines)
+      if @platform.name == :ios
         xcodebuild(defines, '-sdk iphonesimulator', 'build-sim')
       end
     end
@@ -144,10 +158,10 @@ module Pod
       `libtool -static -o #{output} #{static_libs.join(' ')}`
     end
 
-    def build_with_mangling(platform, options)
+    def build_with_mangling(options)
       UI.puts 'Mangling symbols'
       defines = Symbols.mangle_for_pod_dependencies(@spec.name, @static_sandbox_root)
-      defines << ' ' << @spec.consumer(platform).compiler_flags.join(' ')
+      defines << ' ' << @spec.consumer(@platform).compiler_flags.join(' ')
 
       UI.puts 'Building mangled framework'
       xcodebuild(defines, options)
@@ -163,18 +177,18 @@ module Pod
       FileUtils.rm_rf('Pods/build')
     end
 
-    def compile(platform)
+    def compile
       defines = "GCC_PREPROCESSOR_DEFINITIONS='$(inherited) PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{@spec.name}'"
-      defines << ' ' << @spec.consumer(platform).compiler_flags.join(' ')
+      defines << ' ' << @spec.consumer(@platform).compiler_flags.join(' ')
 
-      if platform.name == :ios
+      if @platform.name == :ios
         options = ios_build_options
       end
 
       xcodebuild(defines, options)
 
       if @mangle
-        return build_with_mangling(platform, options)
+        return build_with_mangling(options)
       end
 
       defines
@@ -190,8 +204,14 @@ module Pod
       # otherwise check if a header exists that is equal to 'spec.name', if so
       # create a default 'module_map' one using it.
       if !@spec.module_map.nil?
-        module_map_file = "#{@static_sandbox_root}/#{@spec.name}/#{@spec.module_map}"
+        
+        puts "=====MODULEMAP=====\n#{@spec.module_map}"
+        module_map_file = @file_accessor.module_map
+        puts "=====FILE=====\n#{module_map_file}"
+
         module_map = File.read(module_map_file) if Pathname(module_map_file).exist?
+        puts "=====MAP=====\n#{module_map}"
+
       elsif File.exist?("#{@public_headers_root}/#{@spec.name}/#{@spec.name}.h")
         module_map = <<MAP
 framework module #{@spec.name} {
@@ -214,14 +234,14 @@ MAP
       `cp "#{license_file}" .` if Pathname(license_file).exist?
     end
 
-    def copy_resources(platform)
+    def copy_resources
       bundles = Dir.glob("#{@static_sandbox_root}/build/*.bundle")
       if @dynamic
         resources_path = "ios/#{@spec.name}.framework"
         `cp -rp #{@static_sandbox_root}/build/*.bundle #{resources_path} 2>&1`
       else
         `cp -rp #{@static_sandbox_root}/build/*.bundle #{@fwk.resources_path} 2>&1`
-        resources = expand_paths(@spec.consumer(platform).resources)
+        resources = expand_paths(@spec.consumer(@platform).resources)
         if resources.count == 0 && bundles.count == 0
           @fwk.delete_resources
           return
@@ -232,8 +252,8 @@ MAP
       end
     end
 
-    def create_framework(platform)
-      @fwk = Framework::Tree.new(@spec.name, platform, @embedded)
+    def create_framework
+      @fwk = Framework::Tree.new(@spec.name, @platform.name.to_s, @embedded)
       @fwk.make
     end
 

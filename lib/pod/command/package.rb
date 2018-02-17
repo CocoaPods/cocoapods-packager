@@ -131,28 +131,21 @@ module Pod
       end
 
       def perform_build(platform, static_sandbox, dynamic_sandbox)
-        static_sandbox_root = config.sandbox_root.to_s
-
-        if @dynamic
-          static_sandbox_root = "#{static_sandbox_root}/#{static_sandbox.root.to_s.split('/').last}"
-          dynamic_sandbox_root = "#{config.sandbox_root}/#{dynamic_sandbox.root.to_s.split('/').last}"
-        end
-
         builder = Pod::Builder.new(
           @source_dir,
-          static_sandbox_root,
-          dynamic_sandbox_root,
-          static_sandbox.public_headers.root,
+          static_sandbox,
+          dynamic_sandbox,
           @spec,
           @embedded,
           @mangle,
           @dynamic,
           @config,
           @bundle_identifier,
-          @exclude_deps
+          @exclude_deps,
+          platform
         )
 
-        builder.build(platform, @library)
+        builder.build(@library)
 
         return unless @embedded
         builder.link_embedded_resources
