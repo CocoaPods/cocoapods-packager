@@ -1,7 +1,7 @@
 module Pod
   class Builder
-    def initialize(file_accessors, source_dir, static_sandbox, dynamic_sandbox, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps, platform)
-      @file_accessors = file_accessors
+    def initialize(installer, source_dir, static_sandbox, dynamic_sandbox, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps, platform, prelink)
+      @installer = installer
       @source_dir = source_dir
       @static_sandbox = static_sandbox
       @dynamic_sandbox = dynamic_sandbox
@@ -13,6 +13,7 @@ module Pod
       @bundle_identifier = bundle_identifier
       @exclude_deps = exclude_deps
       @platform = platform
+      @prelink = prelink
       @static_sandbox_root = @static_sandbox.root.to_s
       if @dynamic
         @static_sandbox_root = "#{@static_sandbox_root}/#{@static_sandbox.root.to_s.split('/').last}"
@@ -20,15 +21,40 @@ module Pod
       end
 
       @public_headers_root = @static_sandbox.public_headers.root
+      @file_accessors = @installer.pod_targets.select {|t| t.pod_name == @spec.name }.flat_map(&:file_accessors)
     end
 
     def build(package_type)
+      prepare_installer
       if package_type == :library
         build_static_library
       elsif package_type == :static_framework
         build_static_framework
       elsif package_type == :dynamic_framework
         build_dynamic_framework
+      end
+    end
+
+    def prepare_installer
+      if @prelink
+        prelink_libs = vendored_libraries
+        prelink_libs += @installer.pod_targets.map do |target|
+          next if target.product_module_name == @spec.name
+
+          if target.should_build?
+            File.join(root, "lib#{target.product_module_name}.a")
+          end
+        end.compact
+        @installer.pods_project.targets.each do |target|
+          target.build_configurations.each do |config|
+            if target.name == @spec.name
+              config.build_settings['GENERATE_MASTER_OBJECT_FILE'] = 'YES'
+              config.build_settings['PRELINK_FLAGS'] = '-objc_abi_version 2'
+              config.build_settings['PRELINK_LIBS'] = "#{prelink_libs.join(' ')}"
+            end              
+          end
+        end
+        @installer.pods_project.save
       end
     end
 
@@ -275,13 +301,26 @@ MAP
       end
     end
 
-    def static_libs_in_sandbox(build_dir = 'build')
+    def static_libraries(installer, root)
+      +        installer.pod_targets.map do |target|
+      +          next if target.product_module_name == @spec.name
+      +
+      +          if target.should_build?
+      +            File.join(root, "lib#{target.product_module_name}.a")
+      +          end
+      +        end.compact
+      +      end
+    def static_libs_in_dir(dir)
       if @exclude_deps
         UI.puts 'Excluding dependencies'
-        Dir.glob("#{@static_sandbox_root}/#{build_dir}/lib#{@spec.name}.a")
+        Dir.glob("#{dir}/lib#{@spec.name}.a")
       else
-        Dir.glob("#{@static_sandbox_root}/#{build_dir}/lib*.a")
+        Dir.glob("#{dir}/lib*.a")
       end
+    end
+
+    def static_libs_in_sandbox(build_dir = 'build')
+      static_libs_in_path("#{@static_sandbox_root}/#{build_dir}")
     end
 
     def vendored_libraries

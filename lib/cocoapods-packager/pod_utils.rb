@@ -26,6 +26,7 @@ module Pod
         static_installer.install!
 
         unless static_installer.nil?
+          prelink_libs = vendored_libraries(static_installer, "$(PODS_ROOT)") | static_libraries(static_installer, "$(CONFIGURATION_BUILD_DIR)")
           static_installer.pods_project.targets.each do |target|
             target.build_configurations.each do |config|
               config.build_settings['CLANG_MODULES_AUTOLINK'] = 'NO'

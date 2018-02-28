@@ -15,6 +15,7 @@ module Pod
           ['--embedded',  'Generate embedded frameworks.'],
           ['--library',   'Generate static libraries.'],
           ['--dynamic',   'Generate dynamic framework.'],
+          ['--prelink',   'Perform a single object prelink'],
           ['--bundle-identifier', 'Bundle identifier for dynamic framework'],
           ['--exclude-deps', 'Exclude symbols from dependencies.'],
           ['--configuration', 'Build the specified configuration (e.g. Debug). Defaults to Release'],
@@ -30,6 +31,7 @@ module Pod
         @library = argv.flag?('library')
         @dynamic = argv.flag?('dynamic')
         @mangle = argv.flag?('mangle', true)
+        @prelink = argv.flag?('prelink', false)
         @bundle_identifier = argv.option('bundle-identifier', nil)
         @exclude_deps = argv.flag?('exclude-deps', false)
         @name = argv.shift_argument
@@ -142,9 +144,8 @@ module Pod
       end
 
       def perform_build(platform, static_sandbox, dynamic_sandbox, static_installer)
-        file_accessors = static_installer.pod_targets.select {|t| t.pod_name == @spec.name }.flat_map(&:file_accessors)
         builder = Pod::Builder.new(
-          file_accessors,
+          static_installer,
           @source_dir,
           static_sandbox,
           dynamic_sandbox,
@@ -155,7 +156,8 @@ module Pod
           @config,
           @bundle_identifier,
           @exclude_deps,
-          platform
+          platform,
+          @prelink
         )
 
         builder.build(@package_type)
