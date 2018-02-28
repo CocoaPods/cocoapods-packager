@@ -40,6 +40,7 @@ module Framework
       @fwk_path.mkdir unless @fwk_path.exist?
 
       @module_map_path = @fwk_path + Pathname.new('Modules')
+      @module_map_path.mkpath unless @module_map_path.exist?
       @versions_path = @fwk_path + Pathname.new('Versions/A')
     end
 
