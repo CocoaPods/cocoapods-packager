@@ -1,6 +1,7 @@
 module Pod
   class Builder
-    def initialize(source_dir, static_sandbox, dynamic_sandbox, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps, platform)
+    def initialize(file_accessors, source_dir, static_sandbox, dynamic_sandbox, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps, platform)
+      @file_accessors = file_accessors
       @source_dir = source_dir
       @static_sandbox = static_sandbox
       @dynamic_sandbox = dynamic_sandbox
@@ -19,22 +20,15 @@ module Pod
       end
 
       @public_headers_root = @static_sandbox.public_headers.root
-
-      pod_root = @static_sandbox.pod_dir(@spec.name)
-      puts pod_root.inspect
-      path_list = Sandbox::PathList.new(pod_root)
-      puts path_list.inspect
-      @file_accessor = Sandbox::FileAccessor.new(path_list, @spec.consumer(@platform))  
-      puts @file_accessor.inspect
     end
 
-    def build(platform, package_type)
+    def build(package_type)
       if package_type == :library
-        build_static_library(platform)
+        build_static_library
       elsif package_type == :static_framework
-        build_static_framework(platform)
+        build_static_framework
       elsif package_type == :dynamic_framework
-        build_dynamic_framework(platform)
+        build_dynamic_framework
       end
     end
 
@@ -48,34 +42,32 @@ module Pod
       platform_path.mkdir unless platform_path.exist?
 
       output = platform_path + Pathname.new("lib#{@spec.name}.a")
-      static_libs = static_libs_in_sandbox
 
-      if platform.name == :ios
-        build_static_lib_for_ios(static_libs, defines, output)
+      if @platform.name == :ios
+        build_static_lib_for_ios(output)
       else
-        build_static_lib_for_mac(static_libs, output)
+        build_static_lib_for_mac(output)
       end
     end
 
-    def build_static_framework(platform)
+    def build_static_framework
       UI.puts("Building static framework #{@spec} with configuration #{@config}")
 
-      defines = compile(platform)
-      build_sim_libraries(platform, defines)
+      defines = compile
+      build_sim_libraries(defines)
     
-      static_libs = static_libs_in_sandbox
+      create_framework
       output = @fwk.versions_path + Pathname.new(@spec.name)
-      create_framework(platform.name.to_s)
 
-      if platform.name == :ios
-        build_static_lib_for_ios(static_libs, defines, output)
+      if @platform.name == :ios
+        build_static_lib_for_ios(output)
       else
-        build_static_lib_for_ios(static_libs, output)
+        build_static_lib_for_mac(output)
       end
 
       copy_headers
       copy_license
-      copy_resources(platform)
+      copy_resources
     end
 
     def link_embedded_resources
@@ -88,11 +80,11 @@ module Pod
       end
     end
 
-    def build_dynamic_framework(platform)
+    def build_dynamic_framework
       UI.puts("Building dynamic framework #{@spec} with configuration #{@config}")
 
-      defines = compile(platform)
-      build_sim_libraries(platform, defines)
+      defines = compile
+      build_sim_libraries(defines)
 
       if @bundle_identifier
         defines = "#{defines} PRODUCT_BUNDLE_IDENTIFIER='#{@bundle_identifier}'"
@@ -106,12 +98,12 @@ module Pod
         build_dynamic_framework_for_mac(defines, output)
       end
 
-      copy_resources(platform)
+      copy_resources
     end
 
     private
 
-    def build_dynamic_framework_for_ios(platform, defines, output)
+    def build_dynamic_framework_for_ios(defines, output)
       # Specify frameworks to link and search paths
       linker_flags = static_linker_flags_in_sandbox
       defines = "#{defines} OTHER_LDFLAGS='$(inherited) #{linker_flags.join(' ')}'"
@@ -128,11 +120,11 @@ module Pod
       `lipo #{@dynamic_sandbox_root}/build/#{@spec.name}.framework/#{@spec.name} #{@dynamic_sandbox_root}/build-sim/#{@spec.name}.framework/#{@spec.name} -create -output #{output}`
 
       FileUtils.mkdir(@platform.name.to_s)
-      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{platform.name}`
-      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework.dSYM #{platform.name}`
+      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{@platform.name}`
+      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework.dSYM #{@platform.name}`
     end
 
-    def build_dynamic_framework_for_mac(platform, defines, _output)
+    def build_dynamic_framework_for_mac(defines, _output)
       # Specify frameworks to link and search paths
       linker_flags = static_linker_flags_in_sandbox
       defines = "#{defines} OTHER_LDFLAGS=\"#{linker_flags.join(' ')}\""
@@ -142,8 +134,8 @@ module Pod
       xcodebuild(defines, nil, 'build', @spec.name.to_s, @dynamic_sandbox_root.to_s)
 
       FileUtils.mkdir(@platform.name.to_s)
-      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{platform.name}`
-      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework.dSYM #{platform.name}`
+      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{@platform.name}`
+      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework.dSYM #{@platform.name}`
     end
 
     def build_sim_libraries(defines)
@@ -152,18 +144,19 @@ module Pod
       end
     end
 
-    def build_static_lib_for_ios(static_libs, _defines, output)
-      return if static_libs.count == 0
-      `libtool -static -o #{@static_sandbox_root}/build/package.a #{static_libs.join(' ')}`
-
-      sim_libs = static_libs_in_sandbox('build-sim')
-      `libtool -static -o #{@static_sandbox_root}/build-sim/package.a #{sim_libs.join(' ')}`
-
-      `lipo #{@static_sandbox_root}/build/package.a #{@static_sandbox_root}/build-sim/package.a -create -output #{output}`
+    def build_static_lib_for_ios(output)
+      static_libs = static_libs_in_sandbox('build') + static_libs_in_sandbox('build-sim') + vendored_libraries
+      libs = ios_architectures.map do |arch|
+        library = "#{@static_sandbox_root}/build/package-#{arch}.a"
+        `libtool -arch_only #{arch} -static -o #{library} #{static_libs.join(' ')}`
+        library
+      end
+      
+      `lipo -create -output #{output} #{libs.join(' ')}`
     end
 
-    def build_static_lib_for_mac(static_libs, output)
-      return if static_libs.count == 0
+    def build_static_lib_for_mac(output)
+      static_libs = static_libs_in_sandbox + vendored_libraries
       `libtool -static -o #{output} #{static_libs.join(' ')}`
     end
 
@@ -215,7 +208,7 @@ module Pod
       if !@spec.module_map.nil?
         
         puts "=====MODULEMAP=====\n#{@spec.module_map}"
-        module_map_file = @file_accessor.module_map
+        module_map_file = @file_accessors.flat_map(&:module_map).first
         puts "=====FILE=====\n#{module_map_file}"
 
         module_map = File.read(module_map_file) if Pathname(module_map_file).exist?
@@ -291,6 +284,18 @@ MAP
       end
     end
 
+    def vendored_libraries
+      if @vendored_libraries
+        @vendored_libraries
+      end
+
+      libs = []
+      libs += @file_accessors.flat_map(&:vendored_static_frameworks).map{ |f| f + f.basename}
+      libs += @file_accessors.flat_map(&:vendored_static_libraries)
+      @vendored_libraries = libs.compact.map(&:to_s)
+      @vendored_libraries
+    end
+
     def static_linker_flags_in_sandbox
       linker_flags = static_libs_in_sandbox.map do |lib|
         lib.slice!('lib')
@@ -301,7 +306,15 @@ MAP
     end
 
     def ios_build_options
-      "ARCHS=\'x86_64 i386 arm64 armv7 armv7s\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\'"
+      return "ARCHS=\'#{ios_architectures.join(' ')}\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\'"
+    end
+
+    def ios_architectures
+      archs = ['x86_64', 'i386', 'arm64', 'armv7', 'armv7s']
+      vendored_libraries.each do |library|
+        archs = `lipo -info #{library}`.split & archs
+      end
+      archs
     end
 
     def xcodebuild(defines = '', args = '', build_dir = 'build', target = 'Pods-packager', project_root = @static_sandbox_root, config = @config)

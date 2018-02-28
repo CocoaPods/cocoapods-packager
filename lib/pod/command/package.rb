@@ -95,7 +95,7 @@ module Pod
         end
 
         begin
-          perform_build(platform, static_sandbox, dynamic_sandbox)
+          perform_build(platform, static_sandbox, dynamic_sandbox, static_installer)
 
         ensure # in case the build fails; see Builder#xcodebuild.
           Pathname.new(config.sandbox_root).rmtree
@@ -141,8 +141,10 @@ module Pod
         [target_dir, work_dir]
       end
 
-      def perform_build(platform, static_sandbox, dynamic_sandbox)
+      def perform_build(platform, static_sandbox, dynamic_sandbox, static_installer)
+        file_accessors = static_installer.pod_targets.select {|t| t.pod_name == @spec.name }.flat_map(&:file_accessors)
         builder = Pod::Builder.new(
+          file_accessors,
           @source_dir,
           static_sandbox,
           dynamic_sandbox,
@@ -156,7 +158,7 @@ module Pod
           platform
         )
 
-        builder.build(platform, @package_type)
+        builder.build(@package_type)
 
         return unless @embedded
         builder.link_embedded_resources
