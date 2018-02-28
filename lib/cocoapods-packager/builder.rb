@@ -28,11 +28,13 @@ module Pod
       puts @file_accessor.inspect
     end
 
-    def build(library)
-      if library
-        build_static_library
-      else
-        build_framework
+    def build(platform, package_type)
+      if package_type == :library
+        build_static_library(platform)
+      elsif package_type == :static_framework
+        build_static_framework(platform)
+      elsif package_type == :dynamic_framework
+        build_dynamic_framework(platform)
       end
     end
 
@@ -44,25 +46,36 @@ module Pod
 
       platform_path = Pathname.new(@platform.name.to_s)
       platform_path.mkdir unless platform_path.exist?
-      build_library(defines, platform_path + Pathname.new("lib#{@spec.name}.a"))
+
+      output = platform_path + Pathname.new("lib#{@spec.name}.a")
+      static_libs = static_libs_in_sandbox
+
+      if platform.name == :ios
+        build_static_lib_for_ios(static_libs, defines, output)
+      else
+        build_static_lib_for_mac(static_libs, output)
+      end
     end
 
-    def build_framework
-      UI.puts("Building framework #{@spec} with configuration #{@config}")
+    def build_static_framework(platform)
+      UI.puts("Building static framework #{@spec} with configuration #{@config}")
 
-      defines = compile
-      build_sim_libraries(defines)
+      defines = compile(platform)
+      build_sim_libraries(platform, defines)
+    
+      static_libs = static_libs_in_sandbox
+      output = @fwk.versions_path + Pathname.new(@spec.name)
+      create_framework(platform.name.to_s)
 
-      if @dynamic
-        build_dynamic_framework(defines, "#{@dynamic_sandbox_root}/build/#{@spec.name}.framework/#{@spec.name}")
+      if platform.name == :ios
+        build_static_lib_for_ios(static_libs, defines, output)
       else
-        create_framework
-        build_library(defines, @fwk.versions_path + Pathname.new(@spec.name))
-        copy_headers
-        copy_license
+        build_static_lib_for_ios(static_libs, output)
       end
 
-      copy_resources
+      copy_headers
+      copy_license
+      copy_resources(platform)
     end
 
     def link_embedded_resources
@@ -75,14 +88,16 @@ module Pod
       end
     end
 
-    private
+    def build_dynamic_framework(platform)
+      UI.puts("Building dynamic framework #{@spec} with configuration #{@config}")
 
-    def build_dynamic_framework(defines, output)
-      UI.puts("Building dynamic Framework #{@spec} with configuration #{@config}")
+      defines = compile(platform)
+      build_sim_libraries(platform, defines)
 
       if @bundle_identifier
         defines = "#{defines} PRODUCT_BUNDLE_IDENTIFIER='#{@bundle_identifier}'"
       end
+      output = "#{@dynamic_sandbox_root}/build/#{@spec.name}.framework/#{@spec.name}"
 
       clean_directory_for_dynamic_build
       if @platform.name == :ios
@@ -90,19 +105,13 @@ module Pod
       else
         build_dynamic_framework_for_mac(defines, output)
       end
+
+      copy_resources(platform)
     end
 
-    def build_library(defines, output)
-      static_libs = static_libs_in_sandbox
+    private
 
-      if @platform.name == :ios
-        build_static_lib_for_ios(static_libs, defines, output)
-      else
-        build_static_lib_for_mac(static_libs, output)
-      end
-    end
-
-    def build_dynamic_framework_for_ios(defines, output)
+    def build_dynamic_framework_for_ios(platform, defines, output)
       # Specify frameworks to link and search paths
       linker_flags = static_linker_flags_in_sandbox
       defines = "#{defines} OTHER_LDFLAGS='$(inherited) #{linker_flags.join(' ')}'"
@@ -173,7 +182,7 @@ module Pod
       FileUtils.rm_rf("#{@static_sandbox_root}/Headers/Public/#{@spec.name}")
       FileUtils.rm_rf("#{@static_sandbox_root}/Headers/Private/#{@spec.name}")
 
-      # Equivalent to removing derrived data
+      # Equivalent to removing derived data
       FileUtils.rm_rf('Pods/build')
     end
 
@@ -195,7 +204,7 @@ module Pod
     end
 
     def copy_headers
-      headers_source_root = "#{@public_headers_root}/#{@spec.name}"
+      headers_source_root = "#{@public_headers_root}/#{@spec.name}/#{@spec.name}"
 
       Dir.glob("#{headers_source_root}/**/*.h").
         each { |h| `ditto #{h} #{@fwk.headers_path}/#{h.sub(headers_source_root, '')}` }
