@@ -44,6 +44,17 @@ module Pod
         @source_dir = Dir.pwd
         @spec = spec_with_path(@name)
         @spec = spec_with_name(@name) unless @spec
+        @package_type = if @library
+          :library
+        elsif @embedded
+          :static_framework
+        elsif @dynamic
+          :dynamic_framework
+        end
+
+        if @package_type == :static_framework
+          @spec.attributes_hash['static_framework'] = true
+        end
         super
       end
 
@@ -145,7 +156,7 @@ module Pod
           platform
         )
 
-        builder.build(@library)
+        builder.build(platform, @package_type)
 
         return unless @embedded
         builder.link_embedded_resources
