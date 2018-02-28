@@ -26,9 +26,16 @@ module Pod
 
       def initialize(argv)
         @embedded = argv.flag?('embedded')
-        @force = argv.flag?('force')
         @library = argv.flag?('library')
         @dynamic = argv.flag?('dynamic')
+        @package_type = if @embedded
+          :static_framework
+        elsif @dynamic
+          :dynamic_framework
+        elsif @library
+          :static_library
+        end
+        @force = argv.flag?('force')
         @mangle = argv.flag?('mangle', true)
         @bundle_identifier = argv.option('bundle-identifier', nil)
         @exclude_deps = argv.flag?('exclude-deps', false)
@@ -84,7 +91,7 @@ module Pod
         end
 
         begin
-          perform_build(platform, static_sandbox, dynamic_sandbox)
+          perform_build(platform, static_sandbox, dynamic_sandbox, static_installer)
 
         ensure # in case the build fails; see Builder#xcodebuild.
           Pathname.new(config.sandbox_root).rmtree
@@ -131,7 +138,7 @@ module Pod
         [target_dir, work_dir]
       end
 
-      def perform_build(platform, static_sandbox, dynamic_sandbox)
+      def perform_build(platform, static_sandbox, dynamic_sandbox, static_installer)
         static_sandbox_root = config.sandbox_root.to_s
 
         if @dynamic
@@ -139,7 +146,11 @@ module Pod
           dynamic_sandbox_root = "#{config.sandbox_root}/#{dynamic_sandbox.root.to_s.split('/').last}"
         end
 
+        file_accessors = static_installer.pod_targets.select {|t| t.pod_name == @spec.name }.flat_map(&:file_accessors)
+        
         builder = Pod::Builder.new(
+          platform,
+          file_accessors,
           @source_dir,
           static_sandbox_root,
           dynamic_sandbox_root,
@@ -153,7 +164,7 @@ module Pod
           @exclude_deps
         )
 
-        builder.build(platform, @library)
+        builder.build(@package_type)
 
         return unless @embedded
         builder.link_embedded_resources
