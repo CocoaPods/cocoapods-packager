@@ -7,6 +7,8 @@ module Pod
   describe Command::Spec::Package do
     describe 'CLAide' do
       after do
+        Dir.glob("Archs-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("CPDColors-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("KFData-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("NikeKit-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("foo-bar-*").each { |dir| Pathname.new(dir).rmtree }
@@ -48,7 +50,7 @@ module Pod
         output[0].should.match /Mach-O universal binary with 5 architectures/
         output[1].should.match /Mach-O dynamically linked shared library i386/
       end
-
+      
       it "should produce a dSYM when dynamic is specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
@@ -147,6 +149,29 @@ module Pod
 
         output[0].should.match /Mach-O universal binary with 5 architectures/
         output[1].should.match /current ar archive/
+      end
+
+
+      it "should include vendor symbols if the Pod has binary dependencies" do
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/CPDColors.podspec --no-mangle })
+        command.run
+
+        lib = Dir.glob("CPDColors-*/ios/CPDColors.framework/CPDColors").first
+        symbols = Symbols.symbols_from_library(lib)
+        symbols.should.include('PFObject')
+      end
+
+      it "includes only available architectures when packaging an iOS Pod with binary dependencies" do
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/Archs.podspec --no-mangle })
+        command.run
+
+        lib = Dir.glob("Archs-*/ios/Archs.framework/Archs").first
+        `lipo #{lib} -verify_arch x86_64 i386 armv7 arm64`
+        $?.success?.should == true
       end
 
       it "mangles symbols if the Pod has dependencies" do
