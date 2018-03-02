@@ -1,7 +1,7 @@
 module Pod
   class Builder
     def initialize(platform, file_accessors, source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps)
-      @platform == platform
+      @platform = platform
       @file_accessors = file_accessors
       @source_dir = source_dir
       @static_sandbox_root = static_sandbox_root
@@ -87,7 +87,7 @@ module Pod
       output = "#{@dynamic_sandbox_root}/build/#{@spec.name}.framework/#{@spec.name}"
 
       clean_directory_for_dynamic_build
-      if platform.name == :ios
+      if @platform.name == :ios
         build_dynamic_framework_for_ios(defines, output)
       else
         build_dynamic_framework_for_mac(defines, output)
@@ -174,7 +174,7 @@ module Pod
 
     def compile
       defines = "GCC_PREPROCESSOR_DEFINITIONS='$(inherited) PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{@spec.name}'"
-      defines << ' ' << @spec.consumer(platform).compiler_flags.join(' ')
+      defines << ' ' << @spec.consumer(@platform).compiler_flags.join(' ')
 
       if @platform.name == :ios
         options = ios_build_options
@@ -223,14 +223,14 @@ MAP
       `cp "#{license_file}" .` if Pathname(license_file).exist?
     end
 
-    def copy_resources(platform)
+    def copy_resources
       bundles = Dir.glob("#{@static_sandbox_root}/build/*.bundle")
       if @dynamic
         resources_path = "ios/#{@spec.name}.framework"
         `cp -rp #{@static_sandbox_root}/build/*.bundle #{resources_path} 2>&1`
       else
         `cp -rp #{@static_sandbox_root}/build/*.bundle #{@fwk.resources_path} 2>&1`
-        resources = expand_paths(@spec.consumer(platform).resources)
+        resources = expand_paths(@spec.consumer(@platform).resources)
         if resources.count == 0 && bundles.count == 0
           @fwk.delete_resources
           return
@@ -241,8 +241,8 @@ MAP
       end
     end
 
-    def create_framework(platform)
-      @fwk = Framework::Tree.new(@spec.name, platform, @embedded)
+    def create_framework
+      @fwk = Framework::Tree.new(@spec.name, @platform, @embedded)
       @fwk.make
     end
 
