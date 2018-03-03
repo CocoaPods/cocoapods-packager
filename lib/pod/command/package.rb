@@ -34,6 +34,8 @@ module Pod
           :dynamic_framework
         elsif @library
           :static_library
+        else
+          :static_framework
         end
         @force = argv.flag?('force')
         @mangle = argv.flag?('mangle', true)
