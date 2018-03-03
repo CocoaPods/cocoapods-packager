@@ -4,7 +4,12 @@ module Symbols
     result = classes_from_symbols(syms)
     result += constants_from_symbols(syms)
 
-    result.reject { |e| e == 'llvm.cmdline' || e == 'llvm.embedded.module' }
+
+    result.reject do |e| 
+      e == 'llvm.cmdline' || 
+      e == 'llvm.embedded.module' ||
+      e == '__clang_at_available_requires_core_foundation_framework'
+    end
   end
 
   module_function :symbols_from_library
