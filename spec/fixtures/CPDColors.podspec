@@ -15,5 +15,5 @@ Pod::Spec.new do |s|
   s.source_files = 'Code'
   s.public_header_files = 'Code/**/*.h'
 
-  s.dependency 'Parse'
+  s.dependency 'FirebaseCore'
 end

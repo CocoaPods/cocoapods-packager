@@ -160,7 +160,7 @@ module Pod
 
         lib = Dir.glob("CPDColors-*/ios/CPDColors.framework/CPDColors").first
         symbols = Symbols.symbols_from_library(lib)
-        symbols.should.include('PFObject')
+        symbols.should.include('FIRApp')
       end
 
       it "includes only available architectures when packaging an iOS Pod with binary dependencies" do
