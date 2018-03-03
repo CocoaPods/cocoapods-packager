@@ -29,14 +29,14 @@ module Pod
         @library = argv.flag?('library')
         @dynamic = argv.flag?('dynamic')
         @package_type = if @embedded
-          :static_framework
-        elsif @dynamic
-          :dynamic_framework
-        elsif @library
-          :static_library
-        else
-          :static_framework
-        end
+                          :static_framework
+                        elsif @dynamic
+                          :dynamic_framework
+                        elsif @library
+                          :static_library
+                        else
+                          :static_framework
+                        end
         @force = argv.flag?('force')
         @mangle = argv.flag?('mangle', true)
         @bundle_identifier = argv.option('bundle-identifier', nil)
@@ -52,7 +52,7 @@ module Pod
 
         @source_dir = Dir.pwd
         @spec = spec_with_path(@name)
-        @spec = spec_with_name(@name) unless @spec
+        @spec ||= spec_with_name(@name)
         super
       end
 
@@ -94,7 +94,6 @@ module Pod
 
         begin
           perform_build(platform, static_sandbox, dynamic_sandbox, static_installer)
-
         ensure # in case the build fails; see Builder#xcodebuild.
           Pathname.new(config.sandbox_root).rmtree
           FileUtils.rm_f('Podfile.lock')
@@ -147,7 +146,7 @@ module Pod
           static_sandbox_root = "#{static_sandbox_root}/#{static_sandbox.root.to_s.split('/').last}"
           dynamic_sandbox_root = "#{config.sandbox_root}/#{dynamic_sandbox.root.to_s.split('/').last}"
         end
-        
+
         builder = Pod::Builder.new(
           platform,
           static_installer,

@@ -15,15 +15,16 @@ module Pod
       @bundle_identifier = bundle_identifier
       @exclude_deps = exclude_deps
 
-      @file_accessors = @static_installer.pod_targets.select {|t| t.pod_name == @spec.name }.flat_map(&:file_accessors)
+      @file_accessors = @static_installer.pod_targets.select { |t| t.pod_name == @spec.name }.flat_map(&:file_accessors)
     end
 
     def build(package_type)
-      if package_type == :static_library
+      case package_type
+      when :static_library
         build_static_library
-      elsif package_type == :static_framework
+      when :static_framework
         build_static_framework
-      elsif package_type == :dynamic_framework
+      when :dynamic_framework
         build_dynamic_framework
       end
     end
@@ -51,7 +52,7 @@ module Pod
 
       defines = compile
       build_sim_libraries(defines)
-    
+
       create_framework
       output = @fwk.versions_path + Pathname.new(@spec.name)
 
@@ -146,7 +147,7 @@ module Pod
         `libtool -arch_only #{arch} -static -o #{library} #{static_libs.join(' ')}`
         library
       end
-      
+
       `lipo -create -output #{output} #{libs.join(' ')}`
     end
 
@@ -279,7 +280,7 @@ MAP
       end
       all_target_file_accessors = @static_installer.pod_targets.flat_map(&:file_accessors)
       libs = []
-      libs += all_target_file_accessors.flat_map(&:vendored_static_frameworks).map{ |f| f + f.basename('.*')}
+      libs += all_target_file_accessors.flat_map(&:vendored_static_frameworks).map { |f| f + f.basename('.*') }
       all_target_file_accessors.flat_map(&:vendored_static_libraries)
       libs += all_target_file_accessors.flat_map(&:vendored_static_libraries)
       @vendored_libraries = libs.compact.map(&:to_s)
@@ -296,11 +297,11 @@ MAP
     end
 
     def ios_build_options
-      return "ARCHS=\'#{ios_architectures.join(' ')}\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\'"
+      "ARCHS=\'#{ios_architectures.join(' ')}\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\'"
     end
 
     def ios_architectures
-      archs = ['x86_64', 'i386', 'arm64', 'armv7', 'armv7s']
+      archs = %w(x86_64 i386 arm64 armv7 armv7s)
       vendored_libraries.each do |library|
         archs = `lipo -info #{library}`.split & archs
       end

@@ -4,11 +4,13 @@ module Symbols
     result = classes_from_symbols(syms)
     result += constants_from_symbols(syms)
 
-
-    result.reject do |e| 
-      e == 'llvm.cmdline' || 
-      e == 'llvm.embedded.module' ||
-      e == '__clang_at_available_requires_core_foundation_framework'
+    result.select do |e|
+      case e
+      when 'llvm.cmdline', 'llvm.embedded.module', '__clang_at_available_requires_core_foundation_framework'
+        false
+      else
+        true
+      end
     end
   end
 
