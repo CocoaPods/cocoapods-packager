@@ -136,9 +136,6 @@ module Pod
         # 3. Copy the source directory for the dynamic framework from the static sandbox.
         copy_dynamic_target(static_sandbox, dynamic_target, dynamic_sandbox)
 
-        # 4. Copy the supporting files for the dynamic framework from the static sandbox.
-        copy_dynamic_supporting_files(static_sandbox, dynamic_target, dynamic_sandbox)
-
         # 5. Update the file accecssors.
         dynamic_target = update_file_accessors(dynamic_target, dynamic_sandbox)
 
@@ -186,11 +183,6 @@ module Pod
       def copy_dynamic_target(static_sandbox, _dynamic_target, dynamic_sandbox)
         command = "cp -a #{static_sandbox.root}/#{@spec.name} #{dynamic_sandbox.root}"
         `#{command}`
-      end
-
-      def copy_dynamic_supporting_files(_static_sandbox, dynamic_target, _dynamic_sandbox)
-        support_dir = Pathname.new(dynamic_target.support_files_dir.to_s.chomp("/#{dynamic_target.name}"))
-        support_dir.mkdir
       end
 
       def update_file_accessors(dynamic_target, dynamic_sandbox)
