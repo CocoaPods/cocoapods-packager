@@ -145,12 +145,10 @@ module Pod
           static_sandbox_root = "#{static_sandbox_root}/#{static_sandbox.root.to_s.split('/').last}"
           dynamic_sandbox_root = "#{config.sandbox_root}/#{dynamic_sandbox.root.to_s.split('/').last}"
         end
-
-        file_accessors = static_installer.pod_targets.select {|t| t.pod_name == @spec.name }.flat_map(&:file_accessors)
         
         builder = Pod::Builder.new(
           platform,
-          file_accessors,
+          static_installer,
           @source_dir,
           static_sandbox_root,
           dynamic_sandbox_root,

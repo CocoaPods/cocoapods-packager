@@ -1,8 +1,8 @@
 module Pod
   class Builder
-    def initialize(platform, file_accessors, source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps)
+    def initialize(platform, static_installer, source_dir, static_sandbox_root, dynamic_sandbox_root, public_headers_root, spec, embedded, mangle, dynamic, config, bundle_identifier, exclude_deps)
       @platform = platform
-      @file_accessors = file_accessors
+      @static_installer = static_installer
       @source_dir = source_dir
       @static_sandbox_root = static_sandbox_root
       @dynamic_sandbox_root = dynamic_sandbox_root
@@ -14,6 +14,8 @@ module Pod
       @config = config
       @bundle_identifier = bundle_identifier
       @exclude_deps = exclude_deps
+
+      @file_accessors = @static_installer.pod_targets.select {|t| t.pod_name == @spec.name }.flat_map(&:file_accessors)
     end
 
     def build(package_type)
@@ -242,7 +244,7 @@ MAP
     end
 
     def create_framework
-      @fwk = Framework::Tree.new(@spec.name, @platform, @embedded)
+      @fwk = Framework::Tree.new(@spec.name, @platform.name.to_s, @embedded)
       @fwk.make
     end
 
@@ -275,10 +277,11 @@ MAP
       if @vendored_libraries
         @vendored_libraries
       end
-
+      all_target_file_accessors = @static_installer.pod_targets.flat_map(&:file_accessors)
       libs = []
-      libs += @file_accessors.flat_map(&:vendored_static_frameworks).map{ |f| f + f.basename}
-      libs += @file_accessors.flat_map(&:vendored_static_libraries)
+      libs += all_target_file_accessors.flat_map(&:vendored_static_frameworks).map{ |f| f + f.basename('.*')}
+      all_target_file_accessors.flat_map(&:vendored_static_libraries)
+      libs += all_target_file_accessors.flat_map(&:vendored_static_libraries)
       @vendored_libraries = libs.compact.map(&:to_s)
       @vendored_libraries
     end
