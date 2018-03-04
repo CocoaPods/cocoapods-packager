@@ -42,6 +42,13 @@ module Pod
       end.message.should.match /--exclude-deps option can only be used for static libraries/
     end
 
+    it 'presents the help if --local is specified without .podspec path' do
+      command = Command.parse(%w{ package AFNetworking --local })
+      should.raise CLAide::Help do
+        command.validate!
+      end.message.should.match /--local option can only be used when a local `.podspec` path is given/
+    end
+
     it 'can package a podspec with only resources' do
       command = Command.parse(%w{ package spec/fixtures/layer-client-messaging-schema.podspec --no-mangle })
       command.run
