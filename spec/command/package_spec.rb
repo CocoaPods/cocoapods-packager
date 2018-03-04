@@ -151,6 +151,18 @@ module Pod
         output[1].should.match /current ar archive/
       end
 
+      it "produces package using local sources when --local is specified" do
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/LocalNikeKit.podspec --local})
+        command.run
+
+        lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
+        symbols = Symbols.symbols_from_library(lib)
+        symbols.should.include('LocalNikeKit')
+        symbols.should.not.include('BBUNikePlusActivity')
+      end
+
       it "includes vendor symbols both from itself and pod dependencies" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
@@ -164,7 +176,7 @@ module Pod
         # from pod dependency
         symbols.should.include('FIRApp')
       end
-
+      
       it "does not include vendor symbols from pod dependencies if option --exclude-deps is specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
