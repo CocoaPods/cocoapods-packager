@@ -151,6 +151,17 @@ module Pod
         output[1].should.match /current ar archive/
       end
 
+      it "produces package using local sources when --local is specified" do
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/LocalNikeKit.podspec --local})
+        command.run
+
+        lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
+        symbols = Symbols.symbols_from_library(lib)
+        symbols.should.include('LocalNikeKit')
+        symbols.should.not.include('BBUNikePlusActivity')
+      end
 
       it "should include vendor symbols if the Pod has binary dependencies" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)

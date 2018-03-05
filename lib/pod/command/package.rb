@@ -15,6 +15,7 @@ module Pod
           ['--embedded',  'Generate embedded frameworks.'],
           ['--library',   'Generate static libraries.'],
           ['--dynamic',   'Generate dynamic framework.'],
+          ['--local',     'Use local state rather than published versions.'],
           ['--bundle-identifier', 'Bundle identifier for dynamic framework'],
           ['--exclude-deps', 'Exclude symbols from dependencies.'],
           ['--configuration', 'Build the specified configuration (e.g. Debug). Defaults to Release'],
@@ -28,6 +29,7 @@ module Pod
         @embedded = argv.flag?('embedded')
         @library = argv.flag?('library')
         @dynamic = argv.flag?('dynamic')
+        @local = argv.flag?('local', false)
         @package_type = if @embedded
                           :static_framework
                         elsif @dynamic
@@ -62,6 +64,7 @@ module Pod
         help! 'podspec has binary-only depedencies, mangling not possible.' if @mangle && binary_only?(@spec)
         help! '--bundle-identifier option can only be used for dynamic frameworks' if @bundle_identifier && !@dynamic
         help! '--exclude-deps option can only be used for static libraries' if @exclude_deps && @dynamic
+        help! '--local option can only be used when a local `.podspec` path is given.' if @local && !@spec.defined_in_file
       end
 
       def run
@@ -133,7 +136,6 @@ module Pod
 
         work_dir = Dir.tmpdir + '/cocoapods-' + Array.new(8) { rand(36).to_s(36) }.join
         Pathname.new(work_dir).mkdir
-        `cp #{@path} #{work_dir}`
         Dir.chdir(work_dir)
 
         [target_dir, work_dir]
