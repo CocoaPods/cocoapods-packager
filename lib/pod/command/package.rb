@@ -64,7 +64,7 @@ module Pod
         help! 'podspec has binary-only depedencies, mangling not possible.' if @mangle && binary_only?(@spec)
         help! '--bundle-identifier option can only be used for dynamic frameworks' if @bundle_identifier && !@dynamic
         help! '--exclude-deps option can only be used for static libraries' if @exclude_deps && @dynamic
-        help! '--local option can only be used when a local `.podspec` path is given.' if @local && !@spec.local?
+        help! '--local option can only be used when a local `.podspec` path is given.' if @local && !@spec.defined_in_file
       end
 
       def run
