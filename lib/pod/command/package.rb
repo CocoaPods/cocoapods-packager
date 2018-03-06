@@ -53,7 +53,9 @@ module Pod
         @config = argv.option('configuration', 'Release')
 
         @source_dir = Dir.pwd
+        @is_spec_from_path = false
         @spec = spec_with_path(@name)
+        @is_spec_from_path = true if @spec
         @spec ||= spec_with_name(@name)
         super
       end
@@ -64,7 +66,7 @@ module Pod
         help! 'podspec has binary-only depedencies, mangling not possible.' if @mangle && binary_only?(@spec)
         help! '--bundle-identifier option can only be used for dynamic frameworks' if @bundle_identifier && !@dynamic
         help! '--exclude-deps option can only be used for static libraries' if @exclude_deps && @dynamic
-        help! '--local option can only be used when a local `.podspec` path is given.' if @local && !@spec.defined_in_file
+        help! '--local option can only be used when a local `.podspec` path is given.' if @local && !@is_spec_from_path
       end
 
       def run
