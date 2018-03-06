@@ -11,9 +11,11 @@ module Pod
         Dir.glob("CPDColors-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("KFData-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("NikeKit-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("LocalNikeKit-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("foo-bar-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("a-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("FH-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("FirebaseAnalytics-*").each { |dir| Pathname.new(dir).rmtree }
       end
 
       it 'registers itself' do
@@ -154,17 +156,17 @@ module Pod
       it "produces package using local sources when --local is specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/LocalNikeKit.podspec --local})
+        command = Command.parse(%w{ package spec/fixtures/LocalSources/LocalNikeKit.podspec --local})
         command.run
 
-        lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
+        lib = Dir.glob("LocalNikeKit-*/ios/LocalNikeKit.framework/LocalNikeKit").first
         symbols = Symbols.symbols_from_library(lib)
         symbols.should.include('LocalNikeKit')
         symbols.should.not.include('BBUNikePlusActivity')
       end
 
       it "includes vendor symbols both from itself and pod dependencies" do
-        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
+        # Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package FirebaseAnalytics --no-mangle })
         command.run
@@ -178,7 +180,7 @@ module Pod
       end
       
       it "does not include vendor symbols from pod dependencies if option --exclude-deps is specified" do
-        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
+        # Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
         command = Command.parse(%w{ package FirebaseAnalytics --no-mangle --exclude-deps})
         command.run
