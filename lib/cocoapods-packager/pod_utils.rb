@@ -14,7 +14,7 @@ module Pod
 
       def install_pod(platform_name, sandbox)
         podfile = podfile_from_spec(
-          File.basename(@path),
+          @path,
           @spec.name,
           platform_name,
           @spec.deployment_target(platform_name),
@@ -42,8 +42,6 @@ module Pod
         options = {}
         if path
           options[:podspec] = path
-        else
-          options[:path] = '.'
         end
         options[:subspecs] = subspecs if subspecs
         Pod::Podfile.new do
@@ -56,21 +54,7 @@ module Pod
                    :deterministic_uuids => false)
 
           target('packager') do
-            if path
-              if subspecs
-                subspecs.each do |subspec|
-                  pod spec_name + '/' + subspec, :podspec => path
-                end
-              else
-                pod spec_name, :podspec => path
-              end
-            elsif subspecs
-              subspecs.each do |subspec|
-                pod spec_name + '/' + subspec, :path => '.'
-              end
-            else
-              pod spec_name, :path => '.'
-            end
+            inherit! :complete
           end
         end
       end

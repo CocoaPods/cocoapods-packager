@@ -65,7 +65,7 @@ module Pod
       end
 
       def run
-        if @path.nil? || @spec.nil?
+        if @spec.nil?
           help! 'Unable to find a podspec with path or name.'
           return
         end
