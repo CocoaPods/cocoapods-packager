@@ -151,16 +151,32 @@ module Pod
         output[1].should.match /current ar archive/
       end
 
-
-      it "should include vendor symbols if the Pod has binary dependencies" do
+      it "includes vendor symbols both from itself and pod dependencies" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/CPDColors.podspec --no-mangle })
+        command = Command.parse(%w{ package FirebaseAnalytics --no-mangle })
+        command.run
+
+        lib = Dir.glob("FirebaseAnalytics-*/ios/FirebaseAnalytics.framework/FirebaseAnalytics").first
+        symbols = Symbols.symbols_from_library(lib)
+        # from itself
+        symbols.should.include('FIRAnalytics')
+        # from pod dependency
+        symbols.should.include('FIRApp')
+      end
+
+      it "does not include vendor symbols from pod dependencies if option --exclude-deps is specified" do
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/CPDColors.podspec --no-mangle --exclude-deps})
         command.run
 
         lib = Dir.glob("CPDColors-*/ios/CPDColors.framework/CPDColors").first
         symbols = Symbols.symbols_from_library(lib)
-        symbols.should.include('FIRApp')
+        # from itself
+        symbols.should.include('FIRAnalytics')
+        # from pod dependency
+        symbols.should.not.include('FIRApp')
       end
 
       it "includes only available architectures when packaging an iOS Pod with binary dependencies" do

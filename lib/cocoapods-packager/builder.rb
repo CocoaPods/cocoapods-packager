@@ -278,11 +278,13 @@ MAP
       if @vendored_libraries
         @vendored_libraries
       end
-      all_target_file_accessors = @static_installer.pod_targets.flat_map(&:file_accessors)
-      libs = []
-      libs += all_target_file_accessors.flat_map(&:vendored_static_frameworks).map { |f| f + f.basename('.*') }
-      all_target_file_accessors.flat_map(&:vendored_static_libraries)
-      libs += all_target_file_accessors.flat_map(&:vendored_static_libraries)
+      file_accessors = if @exclude_deps
+                         @file_accessors
+                       else
+                         @static_installer.pod_targets.flat_map(&:file_accessors)
+                       end
+      libs = file_accessors.flat_map(&:vendored_static_frameworks).map { |f| f + f.basename('.*') } || []
+      libs += file_accessors.flat_map(&:vendored_static_libraries)
       @vendored_libraries = libs.compact.map(&:to_s)
       @vendored_libraries
     end
