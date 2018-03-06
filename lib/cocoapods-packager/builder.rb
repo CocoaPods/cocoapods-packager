@@ -38,7 +38,7 @@ module Pod
       platform_path = Pathname.new(@platform.name.to_s)
       platform_path.mkdir unless platform_path.exist?
 
-      output = platform_path + Pathname.new("lib#{@spec.name}.a")
+      output = platform_path + "lib#{@spec.name}.a"
 
       if @platform.name == :ios
         build_static_library_for_ios(output)
