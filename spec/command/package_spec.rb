@@ -180,10 +180,10 @@ module Pod
       it "does not include vendor symbols from pod dependencies if option --exclude-deps is specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/CPDColors.podspec --no-mangle --exclude-deps})
+        command = Command.parse(%w{ package FirebaseAnalytics --no-mangle --exclude-deps})
         command.run
 
-        lib = Dir.glob("CPDColors-*/ios/CPDColors.framework/CPDColors").first
+        lib = Dir.glob("FirebaseAnalytics-*/ios/FirebaseAnalytics.framework/FirebaseAnalytics").first
         symbols = Symbols.symbols_from_library(lib)
         # from itself
         symbols.should.include('FIRAnalytics')
