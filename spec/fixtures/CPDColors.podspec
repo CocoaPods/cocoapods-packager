@@ -9,11 +9,11 @@ Pod::Spec.new do |s|
   s.source           = { :git => "https://github.com/neonichu/CPDColors.git", :tag => s.version.to_s }
   s.social_media_url = 'https://twitter.com/NeoNacho'
 
-  s.platform = :ios, '6.0'
+  s.platform = :ios, '8.0'
 
   s.requires_arc = true
   s.source_files = 'Code'
   s.public_header_files = 'Code/**/*.h'
 
-  s.dependency 'Parse-iOS-SDK'
+  s.dependency 'FirebaseAnalytics'
 end

@@ -14,7 +14,7 @@ module Pod
 
       def install_pod(platform_name, sandbox)
         podfile = podfile_from_spec(
-          File.basename(@path),
+          @path,
           @spec.name,
           platform_name,
           @spec.deployment_target(platform_name),
@@ -41,9 +41,11 @@ module Pod
       def podfile_from_spec(path, spec_name, platform_name, deployment_target, subspecs, sources)
         options = {}
         if path
-          options[:podspec] = path
-        else
-          options[:path] = '.'
+          if @local
+            options[:path] = path
+          else
+            options[:podspec] = path
+          end
         end
         options[:subspecs] = subspecs if subspecs
         Pod::Podfile.new do
@@ -56,21 +58,7 @@ module Pod
                    :deterministic_uuids => false)
 
           target('packager') do
-            if path
-              if subspecs
-                subspecs.each do |subspec|
-                  pod spec_name + '/' + subspec, :podspec => path
-                end
-              else
-                pod spec_name, :podspec => path
-              end
-            elsif subspecs
-              subspecs.each do |subspec|
-                pod spec_name + '/' + subspec, :path => '.'
-              end
-            else
-              pod spec_name, :path => '.'
-            end
+            inherit! :complete
           end
         end
       end
@@ -100,19 +88,19 @@ module Pod
       def spec_with_path(path)
         return if path.nil? || !Pathname.new(path).exist?
 
-        @path = path
+        @path = Pathname.new(path).expand_path
 
-        if Pathname.new(path).directory?
-          help! path + ': is a directory.'
+        if @path.directory?
+          help! @path + ': is a directory.'
           return
         end
 
-        unless ['.podspec', '.json'].include? Pathname.new(path).extname
-          help! path + ': is not a podspec.'
+        unless ['.podspec', '.json'].include? @path.extname
+          help! @path + ': is not a podspec.'
           return
         end
 
-        Specification.from_file(path)
+        Specification.from_file(@path)
       end
 
       #----------------------
@@ -135,9 +123,6 @@ module Pod
 
         # 3. Copy the source directory for the dynamic framework from the static sandbox.
         copy_dynamic_target(static_sandbox, dynamic_target, dynamic_sandbox)
-
-        # 4. Copy the supporting files for the dynamic framework from the static sandbox.
-        copy_dynamic_supporting_files(static_sandbox, dynamic_target, dynamic_sandbox)
 
         # 5. Update the file accecssors.
         dynamic_target = update_file_accessors(dynamic_target, dynamic_sandbox)
@@ -186,11 +171,6 @@ module Pod
       def copy_dynamic_target(static_sandbox, _dynamic_target, dynamic_sandbox)
         command = "cp -a #{static_sandbox.root}/#{@spec.name} #{dynamic_sandbox.root}"
         `#{command}`
-      end
-
-      def copy_dynamic_supporting_files(_static_sandbox, dynamic_target, _dynamic_sandbox)
-        support_dir = Pathname.new(dynamic_target.support_files_dir.to_s.chomp("/#{dynamic_target.name}"))
-        support_dir.mkdir
       end
 
       def update_file_accessors(dynamic_target, dynamic_sandbox)

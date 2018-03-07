@@ -15,6 +15,7 @@ module Pod
           ['--embedded',  'Generate embedded frameworks.'],
           ['--library',   'Generate static libraries.'],
           ['--dynamic',   'Generate dynamic framework.'],
+          ['--local',     'Use local state rather than published versions.'],
           ['--bundle-identifier', 'Bundle identifier for dynamic framework'],
           ['--exclude-deps', 'Exclude symbols from dependencies.'],
           ['--configuration', 'Build the specified configuration (e.g. Debug). Defaults to Release'],
@@ -26,9 +27,19 @@ module Pod
 
       def initialize(argv)
         @embedded = argv.flag?('embedded')
-        @force = argv.flag?('force')
         @library = argv.flag?('library')
         @dynamic = argv.flag?('dynamic')
+        @local = argv.flag?('local', false)
+        @package_type = if @embedded
+                          :static_framework
+                        elsif @dynamic
+                          :dynamic_framework
+                        elsif @library
+                          :static_library
+                        else
+                          :static_framework
+                        end
+        @force = argv.flag?('force')
         @mangle = argv.flag?('mangle', true)
         @bundle_identifier = argv.option('bundle-identifier', nil)
         @exclude_deps = argv.flag?('exclude-deps', false)
@@ -42,8 +53,10 @@ module Pod
         @config = argv.option('configuration', 'Release')
 
         @source_dir = Dir.pwd
+        @is_spec_from_path = false
         @spec = spec_with_path(@name)
-        @spec = spec_with_name(@name) unless @spec
+        @is_spec_from_path = true if @spec
+        @spec ||= spec_with_name(@name)
         super
       end
 
@@ -53,10 +66,11 @@ module Pod
         help! 'podspec has binary-only depedencies, mangling not possible.' if @mangle && binary_only?(@spec)
         help! '--bundle-identifier option can only be used for dynamic frameworks' if @bundle_identifier && !@dynamic
         help! '--exclude-deps option can only be used for static libraries' if @exclude_deps && @dynamic
+        help! '--local option can only be used when a local `.podspec` path is given.' if @local && !@is_spec_from_path
       end
 
       def run
-        if @path.nil? || @spec.nil?
+        if @spec.nil?
           help! 'Unable to find a podspec with path or name.'
           return
         end
@@ -84,8 +98,7 @@ module Pod
         end
 
         begin
-          perform_build(platform, static_sandbox, dynamic_sandbox)
-
+          perform_build(platform, static_sandbox, dynamic_sandbox, static_installer)
         ensure # in case the build fails; see Builder#xcodebuild.
           Pathname.new(config.sandbox_root).rmtree
           FileUtils.rm_f('Podfile.lock')
@@ -125,13 +138,12 @@ module Pod
 
         work_dir = Dir.tmpdir + '/cocoapods-' + Array.new(8) { rand(36).to_s(36) }.join
         Pathname.new(work_dir).mkdir
-        `cp #{@path} #{work_dir}`
         Dir.chdir(work_dir)
 
         [target_dir, work_dir]
       end
 
-      def perform_build(platform, static_sandbox, dynamic_sandbox)
+      def perform_build(platform, static_sandbox, dynamic_sandbox, static_installer)
         static_sandbox_root = config.sandbox_root.to_s
 
         if @dynamic
@@ -140,6 +152,8 @@ module Pod
         end
 
         builder = Pod::Builder.new(
+          platform,
+          static_installer,
           @source_dir,
           static_sandbox_root,
           dynamic_sandbox_root,
@@ -153,7 +167,7 @@ module Pod
           @exclude_deps
         )
 
-        builder.build(platform, @library)
+        builder.build(@package_type)
 
         return unless @embedded
         builder.link_embedded_resources

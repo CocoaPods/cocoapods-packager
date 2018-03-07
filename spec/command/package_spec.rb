@@ -7,11 +7,15 @@ module Pod
   describe Command::Spec::Package do
     describe 'CLAide' do
       after do
+        Dir.glob("Archs-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("CPDColors-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("KFData-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("NikeKit-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("LocalNikeKit-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("foo-bar-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("a-*").each { |dir| Pathname.new(dir).rmtree }
         Dir.glob("FH-*").each { |dir| Pathname.new(dir).rmtree }
+        Dir.glob("FirebaseAnalytics-*").each { |dir| Pathname.new(dir).rmtree }
       end
 
       it 'registers itself' do
@@ -48,7 +52,7 @@ module Pod
         output[0].should.match /Mach-O universal binary with 5 architectures/
         output[1].should.match /Mach-O dynamically linked shared library i386/
       end
-
+      
       it "should produce a dSYM when dynamic is specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
@@ -147,6 +151,53 @@ module Pod
 
         output[0].should.match /Mach-O universal binary with 5 architectures/
         output[1].should.match /current ar archive/
+      end
+
+      it "produces package using local sources when --local is specified" do
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/LocalSources/LocalNikeKit.podspec --local})
+        command.run
+
+        lib = Dir.glob("LocalNikeKit-*/ios/LocalNikeKit.framework/LocalNikeKit").first
+        symbols = Symbols.symbols_from_library(lib)
+        symbols.should.include('LocalNikeKit')
+        symbols.should.not.include('BBUNikePlusActivity')
+      end
+
+      it "includes vendor symbols both from itself and pod dependencies" do
+        command = Command.parse(%w{ package FirebaseAnalytics --no-mangle })
+        command.run
+
+        lib = Dir.glob("FirebaseAnalytics-*/ios/FirebaseAnalytics.framework/FirebaseAnalytics").first
+        symbols = Symbols.symbols_from_library(lib)
+        # from itself
+        symbols.should.include('FIRAnalytics')
+        # from pod dependency
+        symbols.should.include('FIRApp')
+      end
+      
+      it "does not include vendor symbols from pod dependencies if option --exclude-deps is specified" do
+        command = Command.parse(%w{ package FirebaseAnalytics --no-mangle --exclude-deps})
+        command.run
+
+        lib = Dir.glob("FirebaseAnalytics-*/ios/FirebaseAnalytics.framework/FirebaseAnalytics").first
+        symbols = Symbols.symbols_from_library(lib)
+        # from itself
+        symbols.should.include('FIRAnalytics')
+        # from pod dependency
+        symbols.should.not.include('FIRApp')
+      end
+
+      it "includes only available architectures when packaging an iOS Pod with binary dependencies" do
+        Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
+
+        command = Command.parse(%w{ package spec/fixtures/Archs.podspec --no-mangle })
+        command.run
+
+        lib = Dir.glob("Archs-*/ios/Archs.framework/Archs").first
+        `lipo #{lib} -verify_arch x86_64 i386 armv7 arm64`
+        $?.success?.should == true
       end
 
       it "mangles symbols if the Pod has dependencies" do
@@ -348,12 +399,12 @@ MAP
         modulemap_contents.should == module_map
       end
 
-      # it "runs with a spec in the master repository" do
-      #  command = Command.parse(%w{ package KFData })
-      #  command.run
-      #
-      #  true.should == true  # To make the test pass without any shoulds
-      # end
+      it "runs with a spec in the master repository" do
+       command = Command.parse(%w{ package KFData })
+       command.run
+      
+       true.should == true  # To make the test pass without any shoulds
+      end
     end
   end
 end
