@@ -166,8 +166,6 @@ module Pod
       end
 
       it "includes vendor symbols both from itself and pod dependencies" do
-        # Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
-
         command = Command.parse(%w{ package FirebaseAnalytics --no-mangle })
         command.run
 
@@ -180,8 +178,6 @@ module Pod
       end
       
       it "does not include vendor symbols from pod dependencies if option --exclude-deps is specified" do
-        # Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
-
         command = Command.parse(%w{ package FirebaseAnalytics --no-mangle --exclude-deps})
         command.run
 
@@ -403,12 +399,12 @@ MAP
         modulemap_contents.should == module_map
       end
 
-      # it "runs with a spec in the master repository" do
-      #  command = Command.parse(%w{ package KFData })
-      #  command.run
-      #
-      #  true.should == true  # To make the test pass without any shoulds
-      # end
+      it "runs with a spec in the master repository" do
+       command = Command.parse(%w{ package KFData })
+       command.run
+      
+       true.should == true  # To make the test pass without any shoulds
+      end
     end
   end
 end
