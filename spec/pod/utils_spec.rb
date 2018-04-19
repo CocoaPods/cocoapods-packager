@@ -73,7 +73,7 @@ module Pod
       dynamic_project = command.send(:install_dynamic_pod, dynamic_sandbox, static_sandbox, static_installer)
 
       dynamic_project.targets.first.build_configuration_list.build_configurations.each do |config|
-        config.build_settings['BITCODE_GENERATION_MODE'].should.not.be.empty
+        config.build_settings['BITCODE_GENERATION_MODE'].should.equal("bitcode")
       end
     end
   end
