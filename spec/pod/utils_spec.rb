@@ -54,5 +54,27 @@ module Pod
 
       Dir.chdir(source_dir)
     end
+
+    it "adds a build user-setting that enables bitcode compilation" do
+      source_dir = Dir.pwd
+
+      Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
+
+      command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec -dynamic})
+      t, w = command.send(:create_working_directory)
+
+      command.config.installation_root = Pathname.new(w)
+      command.config.sandbox_root      = 'Pods'
+
+      static_sandbox = command.send(:build_static_sandbox, true)
+      static_installer = command.send(:install_pod, :ios, static_sandbox)
+
+      dynamic_sandbox = command.send(:build_dynamic_sandbox, static_sandbox, static_installer)
+      dynamic_project = command.send(:install_dynamic_pod, dynamic_sandbox, static_sandbox, static_installer)
+
+      dynamic_project.targets.first.build_configuration_list.build_configurations.each do |config|
+        config.build_settings['BITCODE_GENERATION_MODE'].should.not.be.empty
+      end
+    end
   end
 end
