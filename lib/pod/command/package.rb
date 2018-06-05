@@ -20,7 +20,7 @@ module Pod
           ['--exclude-deps', 'Exclude symbols from dependencies.'],
           ['--configuration', 'Build the specified configuration (e.g. Debug). Defaults to Release'],
           ['--subspecs', 'Only include the given subspecs'],
-          ['--spec-sources=private,https://github.com/CocoaPods/Specs.git', 'The sources to pull dependant ' \
+          ['--spec-sources=private,https://github.com/CocoaPods/Specs.git', 'The sources to pull dependent ' \
             'pods from (defaults to https://github.com/CocoaPods/Specs.git)']
         ]
       end
