@@ -3,6 +3,7 @@ module Symbols
     syms = `nm -gU #{library}`.split("\n")
     result = classes_from_symbols(syms)
     result += constants_from_symbols(syms)
+    result += variables_from_symbols(syms)
 
     result.reject { |e| e == 'llvm.cmdline' || e == 'llvm.embedded.module' }
   end
@@ -30,6 +31,14 @@ module Symbols
     consts + other_consts
   end
 
+  def variables_from_symbols(syms)
+    variables = syms.select { |variable| variable[/ D /] }
+    variables = variables.select { |variable| variable !~ /l_OBJC|\.eh/ }
+    variables = variables.uniq
+    variables.map! { |variable| variable.gsub(/^.* _/, '') }
+  end
+
   module_function :classes_from_symbols
   module_function :constants_from_symbols
+  module_function :variables_from_symbols
 end
