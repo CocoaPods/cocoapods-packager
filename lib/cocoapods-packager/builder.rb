@@ -45,6 +45,9 @@ module Pod
       else
         build_static_library_for_mac(output)
       end
+
+      copy_headers_for_static_library
+
     end
 
     def build_static_framework
@@ -149,6 +152,7 @@ module Pod
       end
 
       `lipo -create -output #{output} #{libs.join(' ')}`
+
     end
 
     def build_static_library_for_mac(output)
@@ -192,9 +196,18 @@ module Pod
       defines
     end
 
-    def copy_headers
+    def copy_headers_for_static_library
+      platform_path = Pathname.new(@platform.name.to_s)
       headers_source_root = "#{@public_headers_root}/#{@spec.name}"
 
+      Dir.glob("#{@public_headers_root}/**/*.h").
+        each { |h| `ditto #{h} #{platform_path}/#{h.sub(headers_source_root, '')}` }
+
+    end
+
+    def copy_headers
+      headers_source_root = "#{@public_headers_root}/#{@spec.name}"
+	
       Dir.glob("#{headers_source_root}/**/*.h").
         each { |h| `ditto #{h} #{@fwk.headers_path}/#{h.sub(headers_source_root, '')}` }
 
