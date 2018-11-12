@@ -15,11 +15,17 @@ module Pod
       end
     end
 
+    def library_path
+      'lib' + @spec.name + '.a'
+    end
+
     def spec_platform(platform)
       fwk_base = platform.name.to_s + '/' + framework_path
+      library_base = platform.name.to_s + '/' + library_path
       spec = <<RB
   s.#{platform.name}.deployment_target    = '#{platform.deployment_target}'
   s.#{platform.name}.vendored_framework   = '#{fwk_base}'
+  s.#{platform.name}.vendored_library     = '#{library_base}'
 RB
 
       %w(frameworks weak_frameworks libraries requires_arc xcconfig).each do |attribute|
