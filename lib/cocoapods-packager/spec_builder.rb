@@ -2,7 +2,7 @@ module Pod
   class SpecBuilder
     def initialize(spec, source, embedded, dynamic)
       @spec = spec
-      @source = source.nil? ? '{ :path => \'.\' }' : source
+      @source = source
       @embedded = embedded
       @dynamic = dynamic
     end
@@ -57,7 +57,13 @@ RB
         spec += "  s.#{attribute} = #{value}\n"
       end
 
-      spec + "  s.source = #{@source}\n\n"
+      if @source.nil?
+        spec += "  s.source = #{@spec.attributes_hash['source']}\n"
+      else
+        spec += "  s.source = #{@source}\n"
+      end
+
+      spec += "  s.source_files = '**/*.h'\n\n"
     end
   end
 end
