@@ -25,11 +25,11 @@ module Pod
       library_base = platform.name.to_s + '/' + library_path
       spec = "  s.#{platform.name}.deployment_target    = '#{platform.deployment_target}'\n"
 
-      if @library.nil?
-        spec += "  s.#{platform.name}.vendored_framework   = '#{fwk_base}'\n"
-      else
-        spec += "  s.#{platform.name}.vendored_library     = '#{library_base}'\n"
-      end
+      spec += if @library.nil?
+                "  s.#{platform.name}.vendored_framework   = '#{fwk_base}'\n"
+              else
+                "  s.#{platform.name}.vendored_library     = '#{library_base}'\n"
+              end
 
       %w(frameworks weak_frameworks libraries requires_arc xcconfig).each do |attribute|
         attributes_hash = @spec.attributes_hash[platform.name.to_s]
