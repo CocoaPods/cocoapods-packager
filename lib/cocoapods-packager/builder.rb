@@ -304,7 +304,13 @@ MAP
     end
 
     def ios_architectures
-      archs = %w(x86_64 i386 arm64 armv7 armv7s)
+      xcode_version_string = `xcodebuild -version`.strip.split()[1]
+      xcode_version = Pod::Version.new(xcode_version_string)
+      archs = if xcode_version < Pod::Version.new('10.0')
+        %w(x86_64 i386 arm64 armv7 armv7s)
+      else
+        %w(x86_64 i386 arm64 arm64e armv7 armv7s)
+      end
       vendored_libraries.each do |library|
         archs = `lipo -info #{library}`.split & archs
       end
