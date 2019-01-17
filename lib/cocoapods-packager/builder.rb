@@ -228,12 +228,18 @@ MAP
 
     def copy_resources
       bundles = Dir.glob("#{@static_sandbox_root}/build/*.bundle")
+
       if @dynamic
         resources_path = "ios/#{@spec.name}.framework"
         `cp -rp #{@static_sandbox_root}/build/*.bundle #{resources_path} 2>&1`
       else
         `cp -rp #{@static_sandbox_root}/build/*.bundle #{@fwk.resources_path} 2>&1`
-        resources = expand_paths(@spec.consumer(@platform).resources)
+        dependency_names = @static_installer.podfile.dependencies.map(&:name)
+        resources = [@spec, *@spec.recursive_subspecs].flat_map do |spec|
+          if (dependency_names & [spec.name, @spec.name]).any?
+            expand_paths(spec.consumer(@platform).resources)
+          end
+        end.compact.uniq
         if resources.count == 0 && bundles.count == 0
           @fwk.delete_resources
           return
