@@ -1,6 +1,6 @@
 module Pod
   class Command
-    class Package < Command
+    class PackagePro < Command
       private
 
       def build_static_sandbox(dynamic)
