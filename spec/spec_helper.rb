@@ -48,3 +48,24 @@ module Pod
 end
 
 #-----------------------------------------------------------------------------#
+
+module SpecHelper
+  def self.fixture(name)
+    Fixture.fixture(name)
+  end
+
+  module Fixture
+    ROOT = Pathname('fixtures').expand_path(__dir__)
+
+    def fixture(name)
+      ROOT + name
+    end
+    module_function :fixture
+  end
+end
+
+module Bacon
+  class Context
+    include SpecHelper::Fixture
+  end
+end

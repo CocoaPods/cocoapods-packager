@@ -86,9 +86,12 @@ module Pod
       end
 
       def spec_with_path(path)
-        return if path.nil? || !Pathname.new(path).exist?
+        return if path.nil?
+        path = Pathname.new(path)
+        path = Pathname.new(Dir.pwd).join(path) unless path.absolute?
+        return unless path.exist?
 
-        @path = Pathname.new(path).expand_path
+        @path = path.expand_path
 
         if @path.directory?
           help! @path + ': is a directory.'
@@ -114,9 +117,17 @@ module Pod
         dynamic_sandbox
       end
 
-      def install_dynamic_pod(dynamic_sandbox, static_sandbox, static_installer)
+      # @param [Pod::Sandbox] dynamic_sandbox
+      #
+      # @param [Pod::Sandbox] static_sandbox
+      #
+      # @param [Pod::Installer] static_installer
+      #
+      # @param [Pod::Platform] platform
+      #
+      def install_dynamic_pod(dynamic_sandbox, static_sandbox, static_installer, platform)
         # 1 Create a dynamic target for only the spec pod.
-        dynamic_target = build_dynamic_target(dynamic_sandbox, static_installer)
+        dynamic_target = build_dynamic_target(dynamic_sandbox, static_installer, platform)
 
         # 2. Build a new xcodeproj in the dynamic_sandbox with only the spec pod as a target.
         project = prepare_pods_project(dynamic_sandbox, dynamic_target.name, static_installer)
@@ -124,31 +135,39 @@ module Pod
         # 3. Copy the source directory for the dynamic framework from the static sandbox.
         copy_dynamic_target(static_sandbox, dynamic_target, dynamic_sandbox)
 
-        # 5. Update the file accecssors.
-        dynamic_target = update_file_accessors(dynamic_target, dynamic_sandbox)
-
-        # 6. Create the file references.
+        # 4. Create the file references.
         install_file_references(dynamic_sandbox, [dynamic_target], project)
 
-        # 7. Install the target.
-        install_library(dynamic_sandbox, dynamic_target)
+        # 5. Install the target.
+        install_library(dynamic_sandbox, dynamic_target, project)
 
-        # 9. Write the actual Xcodeproject to the dynamic sandbox.
+        # 6. Write the actual .xcodeproj to the dynamic sandbox.
         write_pod_project(project, dynamic_sandbox)
       end
 
-      def build_dynamic_target(dynamic_sandbox, static_installer)
+      # @param [Pod::Installer] static_installer
+      #
+      # @return [Pod::PodTarget]
+      #
+      def build_dynamic_target(dynamic_sandbox, static_installer, platform)
         spec_targets = static_installer.pod_targets.select do |target|
           target.name == @spec.name
         end
         static_target = spec_targets[0]
 
-        dynamic_target = Pod::PodTarget.new(static_target.specs, static_target.target_definitions, dynamic_sandbox)
-        dynamic_target.host_requires_frameworks = true
-        dynamic_target.user_build_configurations = static_target.user_build_configurations
+        file_accessors = create_file_accessors(static_target, dynamic_sandbox)
+
+        archs = []
+        dynamic_target = Pod::PodTarget.new(dynamic_sandbox, true, static_target.user_build_configurations, archs, platform, static_target.specs, static_target.target_definitions, file_accessors)
         dynamic_target
       end
 
+      # @param [Pod::Sandbox] dynamic_sandbox
+      #
+      # @param [String] spec_name
+      #
+      # @param [Pod::Installer] installer
+      #
       def prepare_pods_project(dynamic_sandbox, spec_name, installer)
         # Create a new pods project
         pods_project = Pod::Project.new(dynamic_sandbox.project_path)
@@ -163,8 +182,6 @@ module Pod
         path = dynamic_sandbox.pod_dir(spec_name)
         was_absolute = dynamic_sandbox.local_path_was_absolute?(spec_name)
         pods_project.add_pod_group(spec_name, path, local, was_absolute)
-
-        dynamic_sandbox.project = pods_project
         pods_project
       end
 
@@ -173,16 +190,13 @@ module Pod
         `#{command}`
       end
 
-      def update_file_accessors(dynamic_target, dynamic_sandbox)
-        pod_root = dynamic_sandbox.pod_dir(dynamic_target.root_spec.name)
+      def create_file_accessors(target, dynamic_sandbox)
+        pod_root = dynamic_sandbox.pod_dir(target.root_spec.name)
 
         path_list = Sandbox::PathList.new(pod_root)
-        file_accessors = dynamic_target.specs.map do |spec|
-          Sandbox::FileAccessor.new(path_list, spec.consumer(dynamic_target.platform))
+        target.specs.map do |spec|
+          Sandbox::FileAccessor.new(path_list, spec.consumer(target.platform))
         end
-
-        dynamic_target.file_accessors = file_accessors
-        dynamic_target
       end
 
       def install_file_references(dynamic_sandbox, pod_targets, pods_project)
@@ -190,22 +204,20 @@ module Pod
         installer.install!
       end
 
-      def install_library(dynamic_sandbox, dynamic_target)
+      def install_library(dynamic_sandbox, dynamic_target, project)
         return if dynamic_target.target_definitions.flat_map(&:dependencies).empty?
-        target_installer = Pod::Installer::Xcode::PodsProjectGenerator::PodTargetInstaller.new(dynamic_sandbox, dynamic_target)
-        target_installer.install!
+        target_installer = Pod::Installer::Xcode::PodsProjectGenerator::PodTargetInstaller.new(dynamic_sandbox, project, dynamic_target)
+        result = target_installer.install!
+        native_target = result.native_target
 
         # Installs System Frameworks
-        dynamic_target.file_accessors.each do |file_accessor|
-          file_accessor.spec_consumer.frameworks.each do |framework|
-            if dynamic_target.should_build?
-              dynamic_target.native_target.add_system_framework(framework)
+        if dynamic_target.should_build?
+          dynamic_target.file_accessors.each do |file_accessor|
+            file_accessor.spec_consumer.frameworks.each do |framework|
+              native_target.add_system_framework(framework)
             end
-          end
-
-          file_accessor.spec_consumer.libraries.each do |library|
-            if dynamic_target.should_build?
-              dynamic_target.native_target.add_system_library(library)
+            file_accessor.spec_consumer.libraries.each do |library|
+              native_target.add_system_library(library)
             end
           end
         end
