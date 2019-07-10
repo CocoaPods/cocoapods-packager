@@ -223,8 +223,8 @@ MAP
 
     def copy_license
       license_file = @spec.license[:file] || 'LICENSE'
-      license_file = "#{@static_sandbox_root}/#{@spec.name}/#{license_file}"
-      `cp "#{license_file}" .` if Pathname(license_file).exist?
+      license_file = Pathname.new("#{@static_sandbox_root}/#{@spec.name}/#{license_file}")
+      FileUtils.cp(license_file, '.') if license_file.exist?
     end
 
     def copy_resources

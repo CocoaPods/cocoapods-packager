@@ -1,9 +1,17 @@
 osx_image: xcode10.1
 language: objective-c
 cache: bundler
+
 before_install:
 - bundle install
 - bundle exec pod repo update --silent
+
+env:
+- TASK=rubocop
+- TASK="rake spec:unit"
+- TASK="rake spec:integration"
+- TASK="rake spec:command"
+
 script:
-- bundle exec rake spec
-- bundle exec rubocop
+- bundle exec $TASK
+
