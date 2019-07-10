@@ -1,9 +1,10 @@
 module Pod
   class SpecBuilder
-    def initialize(spec, source, embedded, dynamic)
+    def initialize(spec, source, embedded, library, dynamic)
       @spec = spec
       @source = source.nil? ? '{ :path => \'.\' }' : source
       @embedded = embedded
+      @library = library
       @dynamic = dynamic
     end
 
@@ -15,12 +16,20 @@ module Pod
       end
     end
 
+    def library_path
+      'lib' + @spec.name + '.a'
+    end
+
     def spec_platform(platform)
       fwk_base = platform.name.to_s + '/' + framework_path
-      spec = <<RB
-  s.#{platform.name}.deployment_target    = '#{platform.deployment_target}'
-  s.#{platform.name}.vendored_framework   = '#{fwk_base}'
-RB
+      library_base = platform.name.to_s + '/' + library_path
+      spec = "  s.#{platform.name}.deployment_target    = '#{platform.deployment_target}'\n"
+
+      spec += if @library.nil?
+                "  s.#{platform.name}.vendored_framework   = '#{fwk_base}'\n"
+              else
+                "  s.#{platform.name}.vendored_library     = '#{library_base}'\n"
+              end
 
       %w(frameworks weak_frameworks libraries requires_arc xcconfig).each do |attribute|
         attributes_hash = @spec.attributes_hash[platform.name.to_s]

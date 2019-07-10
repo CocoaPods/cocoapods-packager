@@ -24,7 +24,7 @@ module Pod
     describe 'Preserve attributes from source specification' do
       before do
         @spec = Specification.from_file('spec/fixtures/Builder.podspec')
-        @builder = SpecBuilder.new(@spec, nil, false, nil)
+        @builder = SpecBuilder.new(@spec, nil, false, nil, nil)
       end
 
       it "preserves platform.frameworks" do
