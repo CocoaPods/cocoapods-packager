@@ -71,7 +71,7 @@ module Pod
 
       def run
         if @spec.nil?
-          help! 'Unable to find a podspec with path or name.'
+          help! "Unable to find a podspec with path or name `#{@name}`."
           return
         end
 
@@ -94,7 +94,7 @@ module Pod
 
         if @dynamic
           dynamic_sandbox = build_dynamic_sandbox(static_sandbox, static_installer)
-          install_dynamic_pod(dynamic_sandbox, static_sandbox, static_installer)
+          install_dynamic_pod(dynamic_sandbox, static_sandbox, static_installer, platform)
         end
 
         begin

@@ -29,7 +29,7 @@ module Pod
       command.send(:install_pod, :osx, nil)
     end
 
-    it "creates seperate static and dynamic target if dynamic is passed" do
+    it "creates separate static and dynamic target if dynamic is passed" do
       source_dir = Dir.pwd
 
       Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
@@ -44,7 +44,7 @@ module Pod
       static_installer = command.send(:install_pod, :ios, static_sandbox)
 
       dynamic_sandbox = command.send(:build_dynamic_sandbox, static_sandbox, static_installer)
-      command.send(:install_dynamic_pod, dynamic_sandbox, static_sandbox, static_installer)
+      command.send(:install_dynamic_pod, dynamic_sandbox, static_sandbox, static_installer, Platform.ios)
 
       static_sandbox_dir = Dir.new(Dir.pwd << "/Pods/Static")
       dynamic_sandbox_dir = Dir.new(Dir.pwd << "/Pods/Dynamic")

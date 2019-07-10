@@ -18,6 +18,13 @@ module Pod
         Dir.glob("FirebaseAnalytics-*").each { |dir| Pathname.new(dir).rmtree }
       end
 
+      def reject_block_symbols(symbols)
+        symbols
+          .reject { |e| e =~ /__block_descriptor.*/ }
+          .reject { |e| e =~ /__destroy_helper_block.*/ }
+          .reject { |e| e =~ /__copy_helper_block.*/ }
+      end
+
       it 'registers itself' do
         Command.parse(%w{ package }).should.be.instance_of Command::Package
       end
@@ -42,7 +49,7 @@ module Pod
       it "should produce a dynamic library when dynamic is specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
+        command = Command.parse(['package', fixture('NikeKit.podspec'), '--dynamic'])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
@@ -56,7 +63,7 @@ module Pod
       it "should produce a dSYM when dynamic is specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
+        command = Command.parse(['package', fixture('NikeKit.podspec'), '--dynamic'])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework.dSYM/Contents/Resources/DWARF/NikeKit").first
@@ -70,7 +77,7 @@ module Pod
       it "should link category symbols when dynamic is specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
+        command = Command.parse(['package', fixture('NikeKit.podspec'), '--dynamic'])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
@@ -84,7 +91,7 @@ module Pod
       it "should produce a dynamic library for OSX when dynamic is specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/KFData.podspec --dynamic })
+        command = Command.parse(['package', fixture('KFData.podspec'), '--dynamic'])
         command.run
 
         lib = Dir.glob("KFData-*/osx/KFData.framework/KFData").first
@@ -97,7 +104,7 @@ module Pod
       it "should produce a dSYM for OSX when dynamic is specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/KFData.podspec --dynamic })
+        command = Command.parse(['package', fixture('KFData.podspec'), '--dynamic'])
         command.run
 
         lib = Dir.glob("KFData-*/osx/KFData.framework.dSYM/Contents/Resources/DWARF/KFData").first
@@ -110,7 +117,7 @@ module Pod
       it "should produce the default plist for iOS and OSX when --dynamic is specified but --bundle-identifier is not" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/KFData.podspec --dynamic})
+        command = Command.parse(['package', fixture('KFData.podspec'), '--dynamic'])
         command.run
 
         ios_plist = File.expand_path(Dir.glob("KFData-*/ios/KFData.framework/Info.plist").first)
@@ -126,7 +133,7 @@ module Pod
       it "should produce the correct plist for iOS and OSX when --dynamic and --bundle-identifier are specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/KFData.podspec --dynamic --bundle-identifier=com.example.KFData})
+        command = Command.parse(['package', fixture('KFData.podspec'), '--dynamic', '--bundle-identifier=com.example.KFData'])
         command.run
 
         ios_plist = File.expand_path(Dir.glob("KFData-*/ios/KFData.framework/Info.plist").first)
@@ -142,7 +149,7 @@ module Pod
       it "should produce a static library when dynamic is not specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
+        command = Command.parse(['package', fixture('NikeKit.podspec')])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
@@ -156,7 +163,7 @@ module Pod
       it "produces package using local sources when --local is specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/LocalSources/LocalNikeKit.podspec --local})
+        command = Command.parse(['package', fixture('LocalSources/LocalNikeKit.podspec'), '--local'])
         command.run
 
         lib = Dir.glob("LocalNikeKit-*/ios/LocalNikeKit.framework/LocalNikeKit").first
@@ -192,7 +199,7 @@ module Pod
       it "includes only available architectures when packaging an iOS Pod with binary dependencies" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/Archs.podspec --no-mangle })
+        command = Command.parse(['package', fixture('Archs.podspec'), '--no-mangle'])
         command.run
 
         lib = Dir.glob("Archs-*/ios/Archs.framework/Archs").first
@@ -203,11 +210,12 @@ module Pod
       it "mangles symbols if the Pod has dependencies" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
+        command = Command.parse(['package', fixture('NikeKit.podspec')])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
         symbols = Symbols.symbols_from_library(lib).uniq.sort.reject { |e| e =~ /PodNikeKit/ }
+        symbols = reject_block_symbols(symbols)
 
         symbols.should == %w{ BBUNikePlusActivity BBUNikePlusSessionManager
                               BBUNikePlusTag }
@@ -216,11 +224,12 @@ module Pod
       it "mangles symbols if the Pod has dependencies and framework is dynamic" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
+        command = Command.parse(['package', fixture('NikeKit.podspec'), '--dynamic'])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
         symbols = Symbols.symbols_from_library(lib).uniq.sort.reject { |e| e =~ /PodNikeKit/ }
+        symbols = reject_block_symbols(symbols)
 
         symbols.should == %w{ BBUNikePlusActivity BBUNikePlusSessionManager
                               BBUNikePlusTag NikeKitVersionNumber NikeKitVersionString }
@@ -229,11 +238,12 @@ module Pod
       it "mangles symbols if the Pod has dependencies regardless of name" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/a.podspec })
+        command = Command.parse(['package', fixture('a.podspec')])
         command.run
 
         lib = Dir.glob("a-*/ios/a.framework/a").first
         symbols = Symbols.symbols_from_library(lib).uniq.sort.reject { |e| e =~ /Poda/ }
+        symbols = reject_block_symbols(symbols)
         symbols.should == %w{ BBUNikePlusActivity BBUNikePlusSessionManager
                                 BBUNikePlusTag }
       end
@@ -241,7 +251,7 @@ module Pod
       it "does not mangle symbols if option --no-mangle is specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --no-mangle })
+        command = Command.parse(['package', fixture('NikeKit.podspec'), '--no-mangle'])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
@@ -252,7 +262,7 @@ module Pod
       it "does not mangle symbols if option --no-mangle and --dynamic are specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --no-mangle --dynamic })
+        command = Command.parse(['package', fixture('NikeKit.podspec'), '--no-mangle', '--dynamic'])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
@@ -263,7 +273,7 @@ module Pod
       it "does not include symbols from dependencies if option --exclude-deps is specified" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --exclude-deps })
+        command = Command.parse(['package', fixture('NikeKit.podspec'), '--exclude-deps'])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
@@ -274,7 +284,7 @@ module Pod
       it "includes the correct architectures when packaging an iOS Pod" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
+        command = Command.parse(['package', fixture('NikeKit.podspec')])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
@@ -285,7 +295,7 @@ module Pod
       it "includes the correct architectures when packaging an iOS Pod as --dynamic" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
+        command = Command.parse(['package', fixture('NikeKit.podspec'), '--dynamic'])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
@@ -296,7 +306,7 @@ module Pod
       it "includes Bitcode for device arch slices when packaging an iOS Pod" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
+        command = Command.parse(['package', fixture('NikeKit.podspec')])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
@@ -311,7 +321,7 @@ module Pod
       it "includes Bitcode for device arch slices when packaging an dynamic iOS Pod" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
+        command = Command.parse(['package', fixture('NikeKit.podspec'), '--dynamic'])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
@@ -326,7 +336,7 @@ module Pod
       it "does not include Bitcode for simulator arch slices when packaging an iOS Pod" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
+        command = Command.parse(['package', fixture('NikeKit.podspec')])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
@@ -340,7 +350,7 @@ module Pod
       it "does not include Bitcode for simulator arch slices when packaging an dynamic iOS Pod" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec --dynamic })
+        command = Command.parse(['package', fixture('NikeKit.podspec'), '--dynamic'])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
@@ -354,7 +364,7 @@ module Pod
       it "does not include local ModuleCache references" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/NikeKit.podspec })
+        command = Command.parse(['package', fixture('NikeKit.podspec')])
         command.run
 
         lib = Dir.glob("NikeKit-*/ios/NikeKit.framework/NikeKit").first
@@ -366,7 +376,7 @@ module Pod
       it "does not fail when the pod name contains a dash" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/foo-bar.podspec })
+        command = Command.parse(['package', fixture('foo-bar.podspec')])
         command.run
 
         true.should == true  # To make the test pass without any shoulds
@@ -375,7 +385,7 @@ module Pod
       it "runs with a path to a spec" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/KFData.podspec })
+        command = Command.parse(['package', fixture('KFData.podspec')])
         command.run
 
         true.should == true  # To make the test pass without any shoulds
@@ -384,7 +394,7 @@ module Pod
       it "it respects module_map directive" do
         Pod::Config.instance.sources_manager.stubs(:search).returns(nil)
 
-        command = Command.parse(%w{ package spec/fixtures/FH.podspec })
+        command = Command.parse(['package', fixture('FH.podspec')])
         command.run
 
         modulemap_contents = File.read(Dir.glob("FH-*/ios/FH.framework/Modules/module.modulemap").first)

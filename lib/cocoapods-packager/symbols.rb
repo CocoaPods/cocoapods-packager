@@ -1,6 +1,6 @@
 module Symbols
   def symbols_from_library(library)
-    syms = `nm -gU #{library}`.split("\n")
+    syms = `nm -defined-only -extern-only #{library}`.split("\n")
     result = classes_from_symbols(syms)
     result += constants_from_symbols(syms)
 
