@@ -54,6 +54,10 @@ module SpecHelper
     Fixture.fixture(name)
   end
 
+  def self.temporary_directory
+    ROOT + 'tmp'
+  end
+
   module Fixture
     ROOT = Pathname('fixtures').expand_path(__dir__)
 
@@ -67,5 +71,9 @@ end
 module Bacon
   class Context
     include SpecHelper::Fixture
+
+    def temporary_directory
+      SpecHelper.temporary_directory
+    end
   end
 end

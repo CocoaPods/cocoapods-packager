@@ -2,6 +2,25 @@ require File.expand_path('../../spec_helper', __FILE__)
 
 module Pod
   describe Builder do
+    describe 'In general' do
+      before do
+        @spec = Specification.from_file('spec/fixtures/Builder.podspec')
+        @static_sandbox_dir = temporary_directory + 'Pods'
+        @installer = stub('Installer', :pod_targets => [])
+        @builder = Builder.new(Platform.new(:ios), @installer, nil, @static_sandbox_dir, nil, nil, @spec, nil, nil, nil, nil, nil, nil)
+      end
+
+      it 'copies the license file if it exists' do
+        path = @static_sandbox_dir + 'Builder/LICENSE.md'
+        path.dirname.mkpath
+        File.open(path, 'w') { |f| f.puts 'Permission is granted...' }
+        @spec.stubs(:license).returns({ :file => 'LICENSE.md'})
+        FileUtils.expects(:cp).with(path, '.')
+        @builder.send(:copy_license)
+        FileUtils.rm_rf(path.dirname)
+      end
+    end
+
     describe 'Xcodebuild command' do
       describe 'compiler flags' do
         before do
