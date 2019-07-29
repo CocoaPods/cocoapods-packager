@@ -262,7 +262,8 @@ MAP
 
     def expand_paths(path_specs)
       path_specs.map do |path_spec|
-        Dir.glob(File.join(@source_dir, path_spec))
+        source = Dir.pwd + '/Pods/' + @spec.name.to_s
+        Dir.glob(File.join(source, path_spec))
       end
     end
 
