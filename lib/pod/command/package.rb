@@ -115,6 +115,7 @@ module Pod
           newspec += builder.spec_platform(platform)
         end
 
+        newspec += builder.spec_dependenies(@exclude_deps)
         newspec += builder.spec_close
         File.open(@spec.name + '.podspec', 'w') { |file| file.write(newspec) }
       end

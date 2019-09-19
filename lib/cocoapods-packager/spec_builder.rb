@@ -43,6 +43,17 @@ RB
       "end\n"
     end
 
+    def spec_dependenies(excludedeps)
+      dependencies = %(  # Excluded - Dependencies\n)
+      if excludedeps
+        @spec.dependencies.each do |dep|
+          dependencies += %(  s.dependency "#{dep.name}", "#{dep.requirement}"\n)
+        end
+      end
+
+      dependencies
+    end
+
     private
 
     def spec_header
