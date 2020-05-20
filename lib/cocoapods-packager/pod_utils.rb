@@ -1,3 +1,4 @@
+require 'cocoapods-core'
 module Pod
   class Command
     class Package < Command
