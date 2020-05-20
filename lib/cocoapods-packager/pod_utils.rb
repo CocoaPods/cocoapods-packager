@@ -1,3 +1,4 @@
+require 'cocoapods-core'
 module Pod
   class Command
     class Package < Command
@@ -158,7 +159,7 @@ module Pod
         file_accessors = create_file_accessors(static_target, dynamic_sandbox)
 
         archs = []
-        dynamic_target = Pod::PodTarget.new(dynamic_sandbox, true, static_target.user_build_configurations, archs, platform, static_target.specs, static_target.target_definitions, file_accessors)
+        dynamic_target = Pod::PodTarget.new(dynamic_sandbox, Pod::BuildType.dynamic_library, static_target.user_build_configurations, archs, platform, static_target.specs, static_target.target_definitions, file_accessors)
         dynamic_target
       end
 
