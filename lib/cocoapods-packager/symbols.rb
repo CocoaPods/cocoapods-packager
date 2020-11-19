@@ -6,7 +6,7 @@ module Symbols
 
     result.select do |e|
       case e
-      when 'llvm.cmdline', 'llvm.embedded.module', '__clang_at_available_requires_core_foundation_framework'
+      when 'llvm.cmdline', 'llvm.embedded.module', '__clang_at_available_requires_core_foundation_framework', 'exception'
         false
       else
         true
